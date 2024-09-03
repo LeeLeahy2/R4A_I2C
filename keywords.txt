@@ -1,0 +1,84 @@
+########################################################
+# Syntax Coloring Map for Robots-For-All I2C support
+########################################################
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+R4A_I2C_GENERAL_CALL_DEVICE_ADDRESS LITERAL1
+R4A_I2C_SWRST                       LITERAL1
+
+R4A_I2C_STANDARD_MODE_HZ            LITERAL1
+R4A_I2C_FAST_MODE_HZ                LITERAL1
+R4A_I2C_FAST_MODE_PLUS_HZ           LITERAL1
+R4A_I2C_HIGH_SPEED_MODE_HZ          LITERAL1
+
+R4A_PCA9685_CHANNEL_COUNT           LITERAL1
+
+R4A_PCA9685_CHANNEL_0               LITERAL1
+R4A_PCA9685_CHANNEL_1               LITERAL1
+R4A_PCA9685_CHANNEL_2               LITERAL1
+R4A_PCA9685_CHANNEL_3               LITERAL1
+R4A_PCA9685_CHANNEL_4               LITERAL1
+R4A_PCA9685_CHANNEL_5               LITERAL1
+R4A_PCA9685_CHANNEL_6               LITERAL1
+R4A_PCA9685_CHANNEL_7               LITERAL1
+R4A_PCA9685_CHANNEL_8               LITERAL1
+R4A_PCA9685_CHANNEL_9               LITERAL1
+R4A_PCA9685_CHANNEL_10              LITERAL1
+R4A_PCA9685_CHANNEL_11              LITERAL1
+R4A_PCA9685_CHANNEL_12              LITERAL1
+R4A_PCA9685_CHANNEL_13              LITERAL1
+R4A_PCA9685_CHANNEL_14              LITERAL1
+R4A_PCA9685_CHANNEL_15              LITERAL1
+
+R4A_PCA9685_REGS_PER_CHANNEL        LITERAL1
+
+########################################################
+# Datatypes (KEYWORD1)
+########################################################
+
+########################################################
+# Structures  and Classes (KEYWORD1)
+########################################################
+
+R4A_I2C_BUS                         KEYWORD1
+R4A_I2C_DEVICE_DESCRIPTION          KEYWORD1
+
+R4A_PCA9685         KEYWORD1
+
+########################################################
+# Methods and Functions (KEYWORD2)
+########################################################
+
+R4A_I2C_BUS             KEYWORD2
+~R4A_I2C_BUS            KEYWORD2
+enumerate               KEYWORD2
+isDevicePresent         KEYWORD2
+read                    KEYWORD2
+write                   KEYWORD2
+
+begin                   KEYWORD2
+bufferLedOnOff          KEYWORD2
+bufferServoPosition     KEYWORD2
+channelToRegister       KEYWORD2
+copyBufferedRegisters   KEYWORD2
+displayLedOnOff         KEYWORD2
+displayRegisters        KEYWORD2
+dumpRegisters           KEYWORD2
+ledOnOff                KEYWORD2
+readRegisters           KEYWORD2
+servoDegreesToOnTicks   KEYWORD2
+servoOnTicksToDegrees   KEYWORD2
+servoPosition           KEYWORD2
+writeBufferedRegisters  KEYWORD2
+writeRegisters          KEYWORD2
+
+########################################################
+# Macros (KEYWORD2)
+########################################################
+
+########################################################
+# Instances (KEYWORD2)
+########################################################
