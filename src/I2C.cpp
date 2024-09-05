@@ -86,9 +86,8 @@ bool R4A_I2C_BUS::write(uint8_t deviceI2cAddress,
                         size_t cmdByteCount,
                         const uint8_t * dataBuffer,
                         size_t dataByteCount,
-                        bool debug,
-                        bool releaseI2cBus,
-                        Print * display)
+                        Print * display,
+                        bool releaseI2cBus)
 {
     bool status;
 
@@ -101,9 +100,8 @@ bool R4A_I2C_BUS::write(uint8_t deviceI2cAddress,
                            cmdByteCount,
                            dataBuffer,
                            dataByteCount,
-                           debug,
-                           releaseI2cBus,
-                           display);
+                           display,
+                           releaseI2cBus);
 
     // Release the lock
     r4aLockRelease(&_lock);
