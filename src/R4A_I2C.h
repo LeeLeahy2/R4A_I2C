@@ -137,4 +137,196 @@ class R4A_I2C_BUS
                                bool releaseI2cBus = true);
 };
 
+//****************************************
+// PA9685 API
+//****************************************
+
+#define R4A_PCA9685_CHANNEL_COUNT       16
+
+#define R4A_PCA9685_CHANNEL_0       0
+#define R4A_PCA9685_CHANNEL_1       1
+#define R4A_PCA9685_CHANNEL_2       2
+#define R4A_PCA9685_CHANNEL_3       3
+#define R4A_PCA9685_CHANNEL_4       4
+#define R4A_PCA9685_CHANNEL_5       5
+#define R4A_PCA9685_CHANNEL_6       6
+#define R4A_PCA9685_CHANNEL_7       7
+#define R4A_PCA9685_CHANNEL_8       8
+#define R4A_PCA9685_CHANNEL_9       9
+#define R4A_PCA9685_CHANNEL_10      10
+#define R4A_PCA9685_CHANNEL_11      11
+#define R4A_PCA9685_CHANNEL_12      12
+#define R4A_PCA9685_CHANNEL_13      13
+#define R4A_PCA9685_CHANNEL_14      14
+#define R4A_PCA9685_CHANNEL_15      15
+
+#define R4A_PCA9685_REGS_PER_CHANNEL        4
+
+class R4A_PCA9685
+{
+private:
+
+    uint16_t _channelModified;
+    uint8_t  _channelRegs[R4A_PCA9685_CHANNEL_COUNT << 2];
+    uint32_t _clockHz;
+    uint32_t _externalClockHz;
+    R4A_I2C_BUS * _i2cBus;
+    uint8_t  _i2cAddress;
+    uint16_t _max[R4A_PCA9685_CHANNEL_COUNT];
+    uint16_t _min[R4A_PCA9685_CHANNEL_COUNT];
+
+public:
+
+    // Constructor
+    // Inputs:
+    //   i2cBus: Address of an R4A_I2C object
+    //   i2cAddress: Address of the PA9685 on the I2C bus
+    //   scanClockHertz: Approximate frequency to scan the LEDs (23 - 1525)
+    //   externalClockHertz: Frequency of external clock, zero (0) for internal clock
+    R4A_PCA9685(R4A_I2C_BUS * i2cBus,
+                uint8_t i2cAddress,
+                uint32_t scanClockHertz,
+                uint32_t externalClockHertz = 25 * 1000 * 1000);
+
+    // Initialize the PA9685 LED controller
+    // Output:
+    //   Returns true if successful, false otherwise
+    bool begin();
+
+    // Buffer a copy of the LED on and off times which will be written to the
+    // PCA9685 at a later time
+    // Inputs:
+    //   channel: Channel number (0 - 15)
+    //   onTime: Value between 0 and 4096, Time = value / (4096 * PA9685 frequency Hz)
+    //   display: Device used for output
+    // Outputs:
+    //   Returns true if successful and false otherwise
+    bool bufferLedOnOff(uint8_t channel,
+                        int16_t onTime,
+                        Print * display = &Serial);
+
+    // Buffer a copy of the servo position will be written to the PCA9685 at
+    // a later time
+    // Inputs:
+    //   channel: Channel number (0 - 15)
+    //   degrees: Value between 0 and 180
+    //   display: Device used for output
+    // Outputs:
+    //   Returns true if successful and false otherwise
+    bool bufferServoPosition(uint8_t channel,
+                             uint8_t degrees,
+                             Print * display = &Serial);
+
+    // Convert channel number into a PCA9685 register address
+    // Inputs:
+    //   channel: Channel number (0 - 15)
+    // Outputs:
+    //   Returns the first PA9685 register address for the channel
+    uint8_t channelToRegister(uint8_t channel);
+
+    // Copy the buffered register data into another buffer
+    // Inputs:
+    //   destBuffer: Address of the buffer to receive a copy of the registers
+    void copyBufferedRegisters(uint8_t * destBuffer);
+
+    // Display the current state of the PCA9685 channel
+    // Inputs:
+    //   channel: Channel number (0 - 15)
+    //   display: Device used for output
+    void displayLedOnOff(uint8_t channel,
+                         Print * display = &Serial);
+
+    // Display the PCA9685 mode registers
+    // Inputs:
+    //   display: Device used for output
+    void displayRegisters(Print * display = &Serial);
+
+    // Dump all of the PCA9685 registers in hexadecimal
+    // Inputs:
+    //   display: Device used for output
+    void dumpRegisters(Print * display = &Serial);
+
+    // Set the LED on and off times
+    // Inputs:
+    //   channel: Channel number (0 - 15)
+    //   onTime: Value between 0 and 4096, Time = value / (4096 * PA9685 frequency Hz)
+    //   display: Device used for debug output, may be nullptr
+    // Outputs:
+    //   Returns true if successful and false otherwise
+    bool ledOnOff(uint8_t channel,
+                  int16_t onTime,
+                  Print * display = nullptr);
+
+    // Read one or more PCA9685 registers
+    // Inputs:
+    //   firstRegisterAddress: Address of the first PA9685 register to be read
+    //   dataBuffer: Address of the buffer to receive the register values
+    //   dataByteCount: Number of bytes to read from the PA9685 device
+    //   display: Device used for debug output, may be nullptr
+    // Outputs:
+    //   Returns the number of bytes read
+    size_t readRegisters(uint8_t firstRegisterAddress,
+                         uint8_t * dataBuffer,
+                         size_t dataByteCount,
+                         Print * display = nullptr);
+
+    // Convert from degrees (0 - 180) to onTime for servo positioning
+    // Inputs:
+    //   degrees:  Servo position in degrees (0 - 180)
+    // Outputs:
+    //   Return the onTicks to program into the PCA9685
+    int16_t servoDegreesToOnTicks(uint8_t degrees);
+
+    // Convert from onTime for servo positioning to degrees (0 - 180)
+    // Inputs:
+    //   onTicks: Ticks for onTime programmed into the PCA9685
+    // Outputs:
+    //   Returns the degrees for the servo position
+    uint8_t servoOnTicksToDegrees(int16_t onTime);
+
+    // Set the servo position
+    // Inputs:
+    //   channel: Channel number (0 - 15)
+    //   degrees: Value between 0 and 180
+    //   display: Device used for debug output, may be nullptr
+    // Outputs:
+    //   Returns true if successful and false otherwise
+    bool servoPosition(uint8_t channel,
+                       uint8_t degrees,
+                       Print * display = nullptr);
+
+    // Write the buffered register data to the PCB9685 registers
+    // Inputs:
+    //   display: Device used for debug output, may be nullptr
+    // Outputs:
+    //   Returns true if successful, false otherwise
+    bool writeBufferedRegisters(Print * display = nullptr);
+
+  private:
+
+    // Display mode 1 register
+    // Inputs:
+    //   display: Device used for output
+    void displayMode1(Print * display = &Serial);
+
+    // Display mode 2 register
+    // Inputs:
+    //   display: Device used for output
+    void displayMode2(Print * display = &Serial);
+
+    // Write data to the PCB9685 registers
+    // Inputs:
+    //   firstRegisterAddress: Address of the first PA9685 register to write
+    //   dataBuffer: Address of the buffer containing the data to write
+    //   dataByteCount: Number of bytes to write to the PA9685 device
+    //   display: Device used for debug output, may be nullptr
+    // Outputs:
+    //   Returns true if successful, false otherwise
+    bool writeRegisters(uint8_t firstRegisterAddress,
+                        uint8_t * dataBuffer,
+                        size_t dataByteCount,
+                        Print * display = nullptr);
+
+};
+
 #endif  // R4A_USING_ESP32

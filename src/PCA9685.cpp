@@ -10,16 +10,13 @@
 // Constants
 //****************************************
 
-#define PCA9685_DEBUG_ON_OFF_TIMES      0
-#define PCA9685_DEBUG_DISPLAY           0
-
 #define PCA9685_REG_LED0_ON_L           6
 
 // Compute the shifted number of ticks in 10% of the interval
-static const double tenPercentTicks = ((double)(4096. / 10.));
+#define TEN_PERCENT_TICKS               ((double)(4096. / 10.))
 
 // Compute the shifted number of ticks in 2.5% of the interval
-static const double twoPointFivePercentTicks = ((double)(tenPercentTicks / 4.));
+#define TWO_POINT_FIVE_PERCENT_TICKS    ((double)(TEN_PERCENT_TICKS / 4.))
 
 //****************************************
 // Macros
@@ -29,8 +26,9 @@ static const double twoPointFivePercentTicks = ((double)(tenPercentTicks / 4.));
 //      degrees * ------------- * ------------ * --------- = ticks
 //                 180 degrees       cycle           10
 //
-#define RCA_PCA9685_TICKS(degrees)  round(((double)degrees * (4096. / (10. * 180.))) + twoPointFivePercentTicks)
-#define RCA_PCA9685_DEGREES(ticks)  round(((double)ticks - twoPointFivePercentTicks) * (180. / tenPercentTicks))
+#define RCA_PCA9685_TICKS(degrees)  round(((double)degrees * (4096. / (10. * 180.))) + TWO_POINT_FIVE_PERCENT_TICKS)
+#define RCA_PCA9685_DEGREES(ticks)  round(((double)ticks - TWO_POINT_FIVE_PERCENT_TICKS) * (180. / TEN_PERCENT_TICKS))
+#define CHAN_TO_REG_ADDR(channel)   ((channel << 2) + PCA9685_REG_LED0_ON_L)
 
 //****************************************
 // Data types
@@ -170,7 +168,7 @@ bool R4A_PCA9685::begin()
 // Buffer a copy of the LED on and off times which will be written to the
 // PCA9685 at a later time
 bool R4A_PCA9685::bufferLedOnOff(uint8_t channel,
-                                 uint16_t onTime,
+                                 int16_t onTime,
                                  Print * display)
 {
     uint16_t onOff[2];
@@ -215,7 +213,7 @@ bool R4A_PCA9685::bufferLedOnOff(uint8_t channel,
     // offTime (0 - 4095) = time to on-->off edge
     //
     // Display the on and off times
-    if (PCA9685_DEBUG_ON_OFF_TIMES)
+    if (display)
     {
         display->printf("LED%d_ON_L: 0x%02x\r\n", channel, onOff[0] & 0xff);
         display->printf("LED%d_ON_H: 0x%02x\r\n", channel, onOff[0] >> 8);
@@ -225,6 +223,7 @@ bool R4A_PCA9685::bufferLedOnOff(uint8_t channel,
 
     // Update the local value of the registers
     memcpy(&_channelRegs[channel << 2], (uint8_t *)onOff, sizeof(onOff));
+    _channelModified |= 1 << channel;
     return true;
 }
 
@@ -242,7 +241,7 @@ bool R4A_PCA9685::bufferServoPosition(uint8_t channel,
 // Convert channel number into a PCA9685 register address
 uint8_t R4A_PCA9685::channelToRegister(uint8_t channel)
 {
-    return (channel << 2) + PCA9685_REG_LED0_ON_L;
+    return CHAN_TO_REG_ADDR(channel);
 }
 
 //*********************************************************************
@@ -344,16 +343,11 @@ void R4A_PCA9685::displayLedOnOff(uint8_t channel,
     {
         // Read the PCA9685 LEDn_ON and LEDn_OFF registers
         firstRegister = channelToRegister(channel);
-        if (PCA9685_DEBUG_DISPLAY)
-            display->printf("firstRegister: %d\r\n", firstRegister);
         if (readRegisters(firstRegister,
                           (uint8_t *)&onOff[0],
                           sizeof(onOff),
                           display) == sizeof(onOff))
         {
-            if (PCA9685_DEBUG_DISPLAY)
-                display->printf("onOff[0]: 0x%04x (%d), onOff[1]: 0x%04x (%d)\r\n",
-                                onOff[0], onOff[0], onOff[1], onOff[1]);
             if (onOff[1] == 4096)
                 display->printf("    CH%02d: Off\r\n", channel);
             else if (onOff[0] == 4096)
@@ -362,27 +356,13 @@ void R4A_PCA9685::displayLedOnOff(uint8_t channel,
             {
                 // Display the delay and on time
                 uSecDelay = PCA9685_TICKS_TO_USEC(onOff[0] & 0x1fff);
-                uSecOn = PCA9685_TICKS_TO_USEC(onOff[1] & 0x1fff);
-                if (PCA9685_DEBUG_DISPLAY)
-                {
-                    display->printf("uSecDelay: %d\r\n", uSecDelay);
-                    display->printf("uSecOn: %d\r\n", uSecOn);
-                }
-                display->printf("    CH%02d: 0x%04x 0x%04x, Delay: %3d.%03d mSec, On: %3d.%03d mSec",
+                uSecOn = PCA9685_TICKS_TO_USEC(onOff[1] & 0x1fff);                display->printf("    CH%02d: 0x%04x 0x%04x, Delay: %3d.%03d mSec, On: %3d.%03d mSec",
                                 channel,
                                 onOff[0],
                                 onOff[1],
                                 uSecDelay / 1000, uSecDelay % 1000,
                                 uSecOn / 1000, uSecOn % 1000);
 
-                // If not on all the time and value is with servo range,
-                // display the degrees
-                if (PCA9685_DEBUG_DISPLAY)
-                {
-                    display->println();
-                    display->printf("min[%d]: %d\r\n", channel, _min[channel]);
-                    display->printf("max[%d]: %d\r\n", channel, _max[channel]);
-                }
                 if ((onOff[1] >= _min[channel])
                     && (onOff[1] <= _max[channel]))
                 {
@@ -473,21 +453,14 @@ void R4A_PCA9685::dumpRegisters(Print * display)
 //*********************************************************************
 // Set the LED on and off times
 bool R4A_PCA9685::ledOnOff(uint8_t channel,
-                           uint16_t onTime,
-                           Print * display,
-                           bool debug)
+                           int16_t onTime,
+                           Print * display)
 {
-    uint8_t firstRegister;
-
     if (!bufferLedOnOff(channel, onTime, display))
         return false;
 
     // Set the on/off times for the LED
-    firstRegister = channelToRegister(channel);
-    return writeBufferedRegisters(firstRegister,
-                                  R4A_PCA9685_REGS_PER_CHANNEL,
-                                  display,
-                                  debug);
+    return writeBufferedRegisters(display);
 }
 
 //*********************************************************************
@@ -496,8 +469,7 @@ bool R4A_PCA9685::ledOnOff(uint8_t channel,
 size_t R4A_PCA9685::readRegisters(uint8_t firstRegisterAddress,
                                   uint8_t * dataBuffer,
                                   size_t dataByteCount,
-                                  Print * display,
-                                  bool debug)
+                                  Print * display)
 {
     size_t bytesRead;
 
@@ -507,10 +479,10 @@ size_t R4A_PCA9685::readRegisters(uint8_t firstRegisterAddress,
                               sizeof(firstRegisterAddress),
                               dataBuffer,
                               dataByteCount,
-                              debug);
+                              display);
 
     // Display the final results
-    if (debug)
+    if (display)
         Serial.printf("PCA9685 0x%02x --> %d bytes\r\n", firstRegisterAddress, bytesRead);
 
     // Return the number of bytes read
@@ -519,9 +491,9 @@ size_t R4A_PCA9685::readRegisters(uint8_t firstRegisterAddress,
 
 //*********************************************************************
 // Convert from degrees (0 - 180) to onTicks for servo positioning
-uint16_t R4A_PCA9685::servoDegreesToOnTicks(uint8_t degrees)
+int16_t R4A_PCA9685::servoDegreesToOnTicks(uint8_t degrees)
 {
-    uint16_t onTicks;
+    int16_t onTicks;
 
     // Typically servos are provided a pulse every 20 mSec.  The minimum
     // pulse width is 2.5% or 0.5 milliseconds.  The maximum pulse width
@@ -540,24 +512,12 @@ uint16_t R4A_PCA9685::servoDegreesToOnTicks(uint8_t degrees)
 
     // Convert ticks to degrees
     onTicks = RCA_PCA9685_TICKS(degrees);
-/*
-Serial.printf("degrees: %d\r\n", degrees);
-double value;
-    value = (double)degrees;
-Serial.printf("degrees: %f\r\n");
-    value *= 4096 / (10. * 180.);
-    value += twoPointFivePercentTicks;
-Serial.printf("degrees: %f\r\n");
-//#define RCA_PCA9685_TICKS(degrees)  round(((double)degrees * (4096. / 10. * 180.)) + twoPointFivePercentTicks)
-    onTicks = (uint16_t)value;
-Serial.printf("onTicks: %d\r\n", onTicks);
-*/
     return onTicks;
 }
 
 //*********************************************************************
 // Convert from onTicks for servo positioning to degrees (0 - 180)
-uint8_t R4A_PCA9685::servoOnTicksToDegrees(uint16_t onTicks)
+uint8_t R4A_PCA9685::servoOnTicksToDegrees(int16_t onTicks)
 {
     uint8_t degrees;
 
@@ -579,45 +539,60 @@ uint8_t R4A_PCA9685::servoOnTicksToDegrees(uint16_t onTicks)
 // Set the servo position
 bool R4A_PCA9685::servoPosition(uint8_t channel,
                                 uint8_t degrees,
-                                Print * display,
-                                bool debug)
+                                Print * display)
 {
-    uint8_t firstRegister;
-
     if (!bufferServoPosition(channel, degrees, display))
         return false;
 
     // Set the on/off times for the LED
-    firstRegister = channelToRegister(channel);
-    return writeRegisters(firstRegister,
-                          &_channelRegs[channel << 2],
-                          R4A_PCA9685_REGS_PER_CHANNEL,
-                          display,
-                          debug);
+    return writeBufferedRegisters(display);
 }
 
 //*********************************************************************
 // Write the buffered register data to the PCB9685 registers
 // Returns true if successful, false otherwise
-bool R4A_PCA9685::writeBufferedRegisters(uint8_t firstChannel,
-                                         size_t dataByteCount,
-                                         Print * display,
-                                         bool debug)
+bool R4A_PCA9685::writeBufferedRegisters(Print * display)
 {
+    uint32_t bitMask;
+    int channel;
+    int channelCount;
+    int firstChannel;
     uint8_t firstRegisterAddress;
+    bool success;
 
-    // Display the transaction for debugging
-    firstRegisterAddress = channelToRegister(firstChannel);
-    if (debug)
-        Serial.printf("PCA9685 0x%02x <-- %d bytes\r\n", firstRegisterAddress, dataByteCount);
+    success = true;
+    for (channel = 0; channel < R4A_PCA9685_CHANNEL_COUNT; channel++)
+    {
+        // Determine the first channel to be modified
+        if (_channelModified & (1 << channel))
+        {
+            // Find the last sequential channel modified
+            firstChannel = channel;
+            for (channel += 1;
+                 (channel < R4A_PCA9685_CHANNEL_COUNT)
+                 && (_channelModified & (1 << channel));
+                 channel += 1)
+                 ;
 
-    // Write the PCA9685 registers
-    return _i2cBus->write(_i2cAddress,
-                          &firstRegisterAddress,
-                          sizeof(firstRegisterAddress),
-                          &_channelRegs[firstChannel << 2],
-                          dataByteCount,
-                          debug);
+            // Determine the number of sequential channels modified
+            channelCount = channel - firstChannel;
+
+            // Display the transaction for debugging
+            firstRegisterAddress = CHAN_TO_REG_ADDR(firstChannel);
+            if (display)
+                display->printf("PCA9685 0x%02x <-- %d bytes\r\n",
+                                firstRegisterAddress, channelCount << 2);
+
+            // Write the PCA9685 registers
+            success &= _i2cBus->write(_i2cAddress,
+                                      &firstRegisterAddress,
+                                      sizeof(firstRegisterAddress),
+                                      &_channelRegs[firstChannel << 2],
+                                      channelCount << 2,
+                                      display);
+        }
+    }
+    return success;
 }
 
 //*********************************************************************
@@ -626,11 +601,10 @@ bool R4A_PCA9685::writeBufferedRegisters(uint8_t firstChannel,
 bool R4A_PCA9685::writeRegisters(uint8_t firstRegisterAddress,
                                  uint8_t * dataBuffer,
                                  size_t dataByteCount,
-                                 Print * display,
-                                 bool debug)
+                                 Print * display)
 {
     // Display the transaction for debugging
-    if (debug)
+    if (display)
         Serial.printf("PCA9685 0x%02x <-- %d bytes\r\n", firstRegisterAddress, dataByteCount);
 
     // Write the PCA9685 registers
@@ -639,5 +613,5 @@ bool R4A_PCA9685::writeRegisters(uint8_t firstRegisterAddress,
                           sizeof(firstRegisterAddress),
                           dataBuffer,
                           dataByteCount,
-                          debug);
+                          display);
 }
