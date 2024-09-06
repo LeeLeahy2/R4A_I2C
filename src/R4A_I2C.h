@@ -329,4 +329,107 @@ public:
 
 };
 
+//****************************************
+// PCA9685 Motor API
+//****************************************
+
+#define R4A_PCA9685_MOTOR_SPEED_MAX     4096
+
+class R4A_PCA9685_MOTOR
+{
+private:
+
+    bool    _dualChannel;   // True when using 2 channels to control the motor
+    uint8_t _minusChannel;  // Minus channel when using 2 channels
+    R4A_PCA9685 * _pca9685; // R4A_PCA9684 object address
+    uint8_t _plusChannel;   // Plus channel for 2 channels, channel for 1 channel
+
+public:
+    // Constructor
+    // Inputs:
+    //   R4A_PCA9685 * pca9685: Address of the R4A_PCA9684 object
+    //   channel: Channel controlling the motor
+    R4A_PCA9685_MOTOR(R4A_PCA9685 * pca9685, uint8_t channel)
+        : _pca9685{pca9685},
+          _dualChannel{false},
+          _plusChannel{channel},
+          _minusChannel{0}
+    {
+    }
+
+    // Constructor
+    // Inputs:
+    //   R4A_PCA9685 * pca9685: Address of the R4A_PCA9684 object
+    //   plusChannel: Channel that is positive during forward speeds
+    //   minusChannel: Channel that is grounded during forward speeds
+    R4A_PCA9685_MOTOR(R4A_PCA9685 * pca9685,
+                      uint8_t plusChannel,
+                      uint8_t minusChannel)
+        : _pca9685{pca9685},
+          _dualChannel{true},
+          _plusChannel{plusChannel},
+          _minusChannel{minusChannel}
+    {
+    }
+
+    // Destructor
+    ~R4A_PCA9685_MOTOR()
+    {
+    }
+
+    // Buffers the brake value, call write to apply the brakes.  Applies
+    // plus to both channels.  When the brakes are not applied the motor
+    // is coasting.
+    // Inputs:
+    //   brakeValue: Value in the range of no braking (0) to full braking (4096)
+    //   display: Object used to display debug messages for this transaction or nullptr
+    // Outputs:
+    //   Returns true if successful, always returns false for single channel
+    //   operation.
+    bool brake(int16_t brakeValue, Print * display = nullptr);
+
+    // Buffers the coasting value, call PCA9685.wrie to start coasting.
+    // Removes power from both sides of the motor.
+    // Inputs:
+    //   display: Object used to display debug messages for this transaction or nullptr
+    // Outputs:
+    //   Returns true if successful.
+    bool coast(Print * display = nullptr);
+
+    // Display the motor state
+    // Inputs:
+    //   display: Object used to display debug messages or nullptr
+    void display(Print * display);
+
+    // Get the minus channel associated with this motor
+    // Outputs:
+    //   Returns the minus channel number
+    uint8_t getMinusChannel();
+
+    // Get the plus channel associated with this motor
+    // Outputs:
+    //   Returns the plus channel number
+    uint8_t getPlusChannel();
+
+    // Buffers the motor speed value, call PCA9685.write to apply the speed
+    // values.  Positive speed values applies positive voltage to the plus
+    // channel and connects the minus channel to ground.  Negative speed
+    // values applies positive voltage to the minus channel and connects
+    // the plus channel to ground.
+    // Inputs:
+    //   speedValue: Value in the range of full reverse (-4096) to full forward (4096),
+    //               where (0) is coasting
+    //   display: Object used to display debug messages for this transaction or nullptr
+    // Outputs:
+    //   Returns true if successful.
+    bool speed(int16_t speedValue, Print * display = nullptr);
+
+    // Writes all of buffered values to the PCA9685.
+    // Inputs:
+    //   display: Object used to display debug messages for this transaction or nullptr
+    // Outputs:
+    //   Returns true if successful, false otherwise.
+    bool write(Print * display = nullptr);
+};
+
 #endif  // R4A_USING_ESP32
