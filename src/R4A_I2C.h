@@ -246,6 +246,21 @@ public:
     //   display: Device used for output
     void dumpRegisters(Print * display = &Serial);
 
+    // Get the minimum value
+    // Inputs:
+    //   channel: Channel number (0 - 15)
+    // Outputs:
+    //   Returns the minimum value for the channel
+    int16_t getMinimum(uint8_t channel);
+
+    //*********************************************************************
+    // Get the maximum value
+    // Inputs:
+    //   channel: Channel number (0 - 15)
+    // Outputs:
+    //   Returns the maximum value for the channel
+    int16_t getMaximum(uint8_t channel);
+
     // Set the LED on and off times
     // Inputs:
     //   channel: Channel number (0 - 15)
@@ -294,6 +309,32 @@ public:
     bool servoPosition(uint8_t channel,
                        uint8_t degrees,
                        Print * display = nullptr);
+
+    // Set the minimum and maximum values
+    // Inputs:
+    //   channel: Channel number (0 - 15)
+    //   minimum: Value between 0 and 4096
+    //   maximum: Value between 0 and 4096
+    //   display: Device used for debug output, may be nullptr
+    // Outputs:
+    //   Returns true if successful and false otherwise
+    bool setMinMax(uint8_t channel,
+                   int16_t minimum,
+                   int16_t maximum,
+                   Print * display = &Serial);
+
+    // Set the minimum and maximum values
+    // Inputs:
+    //   channel: Channel number (0 - 15)
+    //   minimum: Value between 0 and 180
+    //   maximum: Value between 0 and 180
+    //   display: Device used for debug output, may be nullptr
+    // Outputs:
+    //   Returns true if successful and false otherwise
+    bool setMinMaxDegrees(uint8_t channel,
+                          uint8_t minimum,
+                          uint8_t maximum,
+                          Print * display = &Serial);
 
     // Write the buffered register data to the PCB9685 registers
     // Inputs:
@@ -430,6 +471,68 @@ public:
     // Outputs:
     //   Returns true if successful, false otherwise.
     bool write(Print * display = nullptr);
+};
+
+//****************************************
+// PCA9685 Servo API
+//****************************************
+
+class R4A_PCA9685_SERVO
+{
+private:
+
+    R4A_PCA9685 * _pca9685; // R4A_PCA9684 object address
+    uint8_t _channel;       // Channel for the servo
+
+public:
+    // Constructor
+    // Inputs:
+    //   R4A_PCA9685 * pca9685: Address of the R4A_PCA9684 object
+    //   channel: Channel controlling the servo
+    //   minimum: Stop point for the servo specified in degrees, range (0 - 180)
+    //   maximum: Stop point for the servo specified in degrees, range (0 - 180)
+    R4A_PCA9685_SERVO(R4A_PCA9685 * pca9685,
+                      uint8_t channel,
+                      uint8_t minimum = 0,
+                      uint8_t maximum = 180)
+        : _pca9685{pca9685},
+          _channel{channel}
+    {
+        // Set the maximum and minimum for the servo
+        _pca9685->setMinMaxDegrees(_channel, minimum, maximum);
+    }
+
+    // Destructor
+    ~R4A_PCA9685_SERVO()
+    {
+    }
+
+    // Get the position of the servo
+    // Inputs:
+    //   display: Object used to display debug messages or nullptr
+    // Outputs:
+    //   Returns the position of the servo
+    uint8_t positionGet(Print * display = nullptr);
+
+    //*********************************************************************
+    // Get the maximum position of the servo
+    // Outputs:
+    //   Returns the maximum position of the servo
+    uint8_t positionMax();
+
+    //*********************************************************************
+    // Get the minimum position of the servo
+    // Outputs:
+    //   Returns the minimum position of the servo
+    uint8_t positionMin();
+
+    // Set the position of the servo
+    // Inputs:
+    //   degrees: Angle to rotate the servo, default range 0 - 180
+    //   display: Object used to display debug messages or nullptr
+    // Outputs:
+    //   Returns true if successful and false otherwise
+    bool positionSet(uint8_t position, Print * display = nullptr);
 };
 
 #endif  // R4A_USING_ESP32

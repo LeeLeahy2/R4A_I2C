@@ -451,6 +451,24 @@ void R4A_PCA9685::dumpRegisters(Print * display)
 }
 
 //*********************************************************************
+// Get the minimum value
+int16_t R4A_PCA9685::getMinimum(uint8_t channel)
+{
+    if (channel < R4A_PCA9685_CHANNEL_COUNT)
+        return _min[channel];
+    return 0;
+}
+
+//*********************************************************************
+// Get the maximum value
+int16_t R4A_PCA9685::getMaximum(uint8_t channel)
+{
+    if (channel < R4A_PCA9685_CHANNEL_COUNT)
+        return _max[channel];
+    return 4096;
+}
+
+//*********************************************************************
 // Set the LED on and off times
 bool R4A_PCA9685::ledOnOff(uint8_t channel,
                            int16_t onTime,
@@ -533,6 +551,74 @@ uint8_t R4A_PCA9685::servoOnTicksToDegrees(int16_t onTicks)
     // Convert from ticks to degreesShift the onTicks to keep the fractional digits
     degrees = RCA_PCA9685_DEGREES(onTicks);
     return degrees;
+}
+
+//*********************************************************************
+// Set the minimum and maximum values
+bool R4A_PCA9685::setMinMax(uint8_t channel,
+                            int16_t minimum,
+                            int16_t maximum,
+                            Print * display)
+{
+    // Validate the channel
+    if (channel >= R4A_PCA9685_CHANNEL_COUNT)
+    {
+        display->println("ERROR: Invalid channel number, use (0 - 15)!\r\n");
+        return false;
+    }
+
+    // Validate the minimum
+    if ((minimum < 0) || (minimum > 4096))
+    {
+        display->println("ERROR: Invalid minimum value, valid range (0 - 4096)!\r\n");
+        return false;
+    }
+
+    // Validate the maximum
+    if ((maximum < 0) || (maximum > 4096))
+    {
+        display->println("ERROR: Invalid maximum value, valid range (0 - 4096)!\r\n");
+        return false;
+    }
+
+    // Set the minimum and maximum values
+    _min[channel] = minimum;
+    _max[channel] = maximum;
+    return true;
+}
+
+//*********************************************************************
+// Set the minimum and maximum values
+bool R4A_PCA9685::setMinMaxDegrees(uint8_t channel,
+                                   uint8_t minimum,
+                                   uint8_t maximum,
+                                   Print * display)
+{
+    // Validate the channel
+    if (channel >= R4A_PCA9685_CHANNEL_COUNT)
+    {
+        display->println("ERROR: Invalid channel number, use (0 - 15)!\r\n");
+        return false;
+    }
+
+    // Validate the minimum
+    if ((minimum < 0) || (minimum >= 180))
+    {
+        display->println("ERROR: Invalid minimum value, valid range (0 - 4096)!\r\n");
+        return false;
+    }
+
+    // Validate the maximum
+    if ((maximum < 0) || (maximum >= 180))
+    {
+        display->println("ERROR: Invalid maximum value, valid range (0 - 4096)!\r\n");
+        return false;
+    }
+
+    // Set the minimum and maximum values
+    _min[channel] = servoDegreesToOnTicks(minimum);
+    _max[channel] = servoDegreesToOnTicks(maximum);
+    return true;
 }
 
 //*********************************************************************
