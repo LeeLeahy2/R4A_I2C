@@ -10,7 +10,7 @@
 #include <Arduino.h>            // Built-in
 #include <Wire.h>               // Built-in
 
-#include <R4A_Common.h>          // Robots-For-All common support
+#include <R4A_Robot.h>          // Robots-For-All robot support
 
 //****************************************
 // Constants
