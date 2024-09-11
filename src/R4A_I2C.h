@@ -166,14 +166,14 @@ class R4A_PCA9685
 {
 private:
 
-    uint16_t _channelModified;
-    uint8_t  _channelRegs[R4A_PCA9685_CHANNEL_COUNT << 2];
-    uint32_t _clockHz;
-    uint32_t _externalClockHz;
-    R4A_I2C_BUS * _i2cBus;
-    uint8_t  _i2cAddress;
-    uint16_t _max[R4A_PCA9685_CHANNEL_COUNT];
-    uint16_t _min[R4A_PCA9685_CHANNEL_COUNT];
+    uint16_t _channelModified;          // One bit per channel, bit set if modified
+    uint8_t  _channelRegs[R4A_PCA9685_CHANNEL_COUNT << 2];  // Copy of channel registers
+    uint32_t _clockHz;                  // Operating frequence
+    const uint32_t _externalClockHz;    // External clock frequency
+    R4A_I2C_BUS * const _i2cBus;        // I2C bus to access the PCA9586
+    const uint8_t  _i2cAddress;         // Address of the PCA9586
+    uint16_t _max[R4A_PCA9685_CHANNEL_COUNT]; // Maximum value for this channel
+    uint16_t _min[R4A_PCA9685_CHANNEL_COUNT]; // Minimum value for this channel
 
 public:
 
@@ -388,10 +388,10 @@ class R4A_PCA9685_MOTOR
 {
 private:
 
-    bool    _dualChannel;   // True when using 2 channels to control the motor
-    uint8_t _minusChannel;  // Minus channel when using 2 channels
-    R4A_PCA9685 * _pca9685; // R4A_PCA9684 object address
-    uint8_t _plusChannel;   // Plus channel for 2 channels, channel for 1 channel
+    const bool    _dualChannel;     // True when using 2 channels to control the motor
+    const uint8_t _minusChannel;    // Minus channel when using 2 channels
+    R4A_PCA9685 * const _pca9685;   // R4A_PCA9684 object address
+    const uint8_t _plusChannel;     // Plus channel for 2 channels, channel for 1 channel
 
 public:
     // Constructor
@@ -489,8 +489,8 @@ class R4A_PCA9685_SERVO
 {
 private:
 
-    R4A_PCA9685 * _pca9685; // R4A_PCA9684 object address
-    uint8_t _channel;       // Channel for the servo
+    R4A_PCA9685 * const _pca9685;   // R4A_PCA9684 object address
+    const uint8_t _channel;         // Channel for the servo
 
 public:
     // Constructor
