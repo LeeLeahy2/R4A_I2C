@@ -246,20 +246,19 @@ public:
     //   display: Device used for output
     void dumpRegisters(Print * display = &Serial);
 
-    // Get the minimum value
-    // Inputs:
-    //   channel: Channel number (0 - 15)
-    // Outputs:
-    //   Returns the minimum value for the channel
-    int16_t getMinimum(uint8_t channel);
-
-    //*********************************************************************
     // Get the maximum value
     // Inputs:
     //   channel: Channel number (0 - 15)
     // Outputs:
     //   Returns the maximum value for the channel
     int16_t getMaximum(uint8_t channel);
+
+    // Get the minimum value
+    // Inputs:
+    //   channel: Channel number (0 - 15)
+    // Outputs:
+    //   Returns the minimum value for the channel
+    int16_t getMinimum(uint8_t channel);
 
     // Set the LED on and off times
     // Inputs:
@@ -514,13 +513,11 @@ public:
     //   Returns the position of the servo
     uint8_t positionGet(Print * display = nullptr);
 
-    //*********************************************************************
     // Get the maximum position of the servo
     // Outputs:
     //   Returns the maximum position of the servo
     uint8_t positionMax();
 
-    //*********************************************************************
     // Get the minimum position of the servo
     // Outputs:
     //   Returns the minimum position of the servo
