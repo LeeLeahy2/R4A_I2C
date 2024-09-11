@@ -76,19 +76,6 @@ union PCA9685_Mode2Register
 (((((uint64_t)ticks) * 1000ull * 1000ull) + ((uint64_t)_clockHz * 4096ull / 2ull)) / ((uint64_t) _clockHz * 4096ull))
 
 //*********************************************************************
-// Initialize the PCA9685 LED controller
-R4A_PCA9685::R4A_PCA9685(R4A_I2C_BUS * i2cBus,
-                         uint8_t i2cAddress,
-                         uint32_t scanClockHertz,
-                         uint32_t externalClockHertz)
-{
-    _i2cBus = i2cBus;
-    _i2cAddress = i2cAddress;
-    _clockHz = scanClockHertz;
-    _externalClockHz = externalClockHertz;
-}
-
-//*********************************************************************
 // Initialize the LED controller
 // Return true if successful, false otherwise
 bool R4A_PCA9685::begin()

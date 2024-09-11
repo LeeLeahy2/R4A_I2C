@@ -186,7 +186,16 @@ public:
     R4A_PCA9685(R4A_I2C_BUS * i2cBus,
                 uint8_t i2cAddress,
                 uint32_t scanClockHertz,
-                uint32_t externalClockHertz = 25 * 1000 * 1000);
+                uint32_t externalClockHertz = 25 * 1000 * 1000)
+        : _i2cBus{i2cBus}, _i2cAddress{i2cAddress}, _clockHz{scanClockHertz},
+          _externalClockHz{externalClockHertz}
+    {
+    }
+
+    // Destructor
+    ~R4A_PCA9685()
+    {
+    }
 
     // Initialize the PA9685 LED controller
     // Output:
