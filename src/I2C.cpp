@@ -12,19 +12,26 @@ void R4A_I2C_BUS::enumerate(Print * display)
 {
     bool deviceFound;
     int index;
+    uint8_t mask;
+    bool present;
     uint32_t timer;
 
-    // Display the device addresses
+    // Walk all of the I2C addresses
     deviceFound = false;
     for (uint8_t addr = 0; addr <= 0x7f; addr++)
     {
+        present = false;
         timer = millis();
-        if (isDevicePresent(addr))
+        if (enumerateDevice(addr))
         {
+            present = true;
             if (deviceFound == false)
             {
-                display->println();
-                display->println("I2C Devices:");
+                if (display)
+                {
+                    display->println();
+                    display->println("I2C Devices:");
+                }
                 deviceFound = true;
             }
 
@@ -36,29 +43,43 @@ void R4A_I2C_BUS::enumerate(Print * display)
                     break;
                 }
 
-            if (index < _deviceTableEntries)
-                display->printf("    0x%02x: %s\r\n", addr, _deviceTable[index].displayName);
-            else if (addr == 0)
-                display->printf("    0x%02x: General Call\r\n", addr);
-            else
-                display->printf("    0x%02x: ???\r\n", addr);
+            if (display)
+            {
+                if (index < _deviceTableEntries)
+                    display->printf("    0x%02x: %s\r\n", addr, _deviceTable[index].displayName);
+                else if (addr == 0)
+                    display->printf("    0x%02x: General Call\r\n", addr);
+                else
+                    display->printf("    0x%02x: ???\r\n", addr);
+            }
         }
         else if ((millis() - timer) > 50)
         {
-            display->println("ERROR: I2C bus not responding!");
+            if (display)
+                display->println("ERROR: I2C bus not responding!");
             return;
         }
+
+        // Update the present bit
+        mask = 1 << addr & 3;
+        if (present)
+            _present[addr / 8] |= mask;
+        else
+            _present[addr / 8] &= ~mask;
     }
 
+    // Successful enumeration
+    _enumerated = true;
+
     // Determine if any devices are on the bus
-    if (!deviceFound)
+    if ((!deviceFound) && display)
         display->println("ERROR: No devices found on the I2C bus!");
 }
 
 //*********************************************************************
 // Ping an I2C device and see if it responds
 // Return true if device detected, false otherwise
-bool R4A_I2C_BUS::isDevicePresent(uint8_t deviceAddress)
+bool R4A_I2C_BUS::enumerateDevice(uint8_t deviceAddress)
 {
     int status;
 
@@ -76,6 +97,16 @@ bool R4A_I2C_BUS::isDevicePresent(uint8_t deviceAddress)
     if (status == 0)
         return true;
     return false;
+}
+
+//*********************************************************************
+// Check if an I2C device was seen during the enumeration
+// Return true if device detected, false otherwise
+bool R4A_I2C_BUS::isDevicePresent(uint8_t deviceAddress)
+{
+    if (!_enumerated)
+        enumerate(nullptr);
+    return _present[deviceAddress / 8] & (1 << (deviceAddress & 3));
 }
 
 //*********************************************************************

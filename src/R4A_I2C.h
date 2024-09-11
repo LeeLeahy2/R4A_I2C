@@ -42,10 +42,12 @@ class R4A_I2C_BUS
 {
   protected:
 
-    TwoWire * _i2cBus;  // API for the I2C bus
+    TwoWire * _i2cBus;      // API for the I2C bus
     const R4A_I2C_DEVICE_DESCRIPTION * const _deviceTable; // I2C device table
-    const int _deviceTableEntries;    // Number of entries in the I2C device table
-    volatile int _lock; // Lock to synchronize access to the I2C bus
+    const int _deviceTableEntries; // Number of entries in the I2C device table
+    bool _enumerated;       // Has the bus been sucessfully enumerated?
+    volatile int _lock;     // Lock to synchronize access to the I2C bus
+    uint8_t _present[16];   // Device detected on the I2C bus during enumeration
 
   public:
 
@@ -70,7 +72,7 @@ class R4A_I2C_BUS
     //   display: Device used for output
     void enumerate(Print * display = &Serial);
 
-    // Ping an I2C device and see if it responds
+    // Check if an I2C device was seen during the enumeration
     // Inputs:
     //   deviceAddress: Device address on the I2C bus (0 - 0x7f)
     // Outputs:
@@ -116,6 +118,13 @@ class R4A_I2C_BUS
                bool releaseI2cBus = true);
 
   private:
+
+    // Ping an I2C device and see if it responds
+    // Inputs:
+    //   deviceAddress: Device address on the I2C bus (0 - 0x7f)
+    // Outputs:
+    //   Returns true if device detected, false otherwise
+    bool enumerateDevice(uint8_t deviceAddress);
 
     // Send data to an I2C peripheral, entered with the I2C bus lock held
     // Inputs:
