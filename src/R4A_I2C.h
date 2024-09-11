@@ -541,4 +541,46 @@ public:
     bool positionSet(uint8_t position, Print * display = nullptr);
 };
 
+//****************************************
+// PCF8574 API
+//****************************************
+
+class R4A_PCF8574
+{
+private:
+
+    R4A_I2C_BUS * const _i2cBus;    // I2C bus to access the PCF8574
+    const uint8_t  _i2cAddress;     // Address of the PCF8574
+
+public:
+
+    // Constructor
+    // Inputs:
+    //   i2cBus: Address of an R4A_I2C object
+    //   i2cAddress: Address of the PA9685 on the I2C bus
+    R4A_PCF8574(R4A_I2C_BUS * i2cBus, uint8_t i2cAddress)
+        : _i2cBus{i2cBus}, _i2cAddress{i2cAddress}
+    {
+    }
+
+    // Destructor
+    ~R4A_PCF8574()
+    {
+    }
+
+    // Read data from the PCF8574 port
+    // Inputs:
+    //   data: Address of buffer to receive the data byte
+    // Outputs:
+    //   Returns true if the data byte was read successfully and false otherwise
+    bool read(uint8_t *data);
+
+    // Write data to the PCF8574 port
+    // Inputs:
+    //   data: Byte of data to be written
+    // Outputs:
+// Returns true if the data byte was successfully written and false otherwise
+    bool write(uint8_t data);
+};
+
 #endif  // R4A_USING_ESP32
