@@ -113,6 +113,172 @@ void R4A_PCA9685_MOTOR::display(Print * display)
     }
 }
 
+//*********************************************************************
+// Brake the motor
+// Start bit, I2C device address, ACK, register address, ACK, 8 data bytes
+// with ACKs and a stop bit, all at 400 KHz
+// 230 uSec = (1+8+1+8+1+((8+1)×8)+1)÷(400×1000)
+// Returns true if successful, false otherwise
+bool r4aPca9685MotorBrake(uint8_t motor, int16_t speed, Print * display)
+{
+    // Validate the motor value
+    if (motor < r4aPca9685MotorTableEntries)
+        // Set the braking value
+        return r4aPca9685MotorTable[motor]->brake(speed, display)
+            && r4aPca9685MotorTable[motor]->write(display);
+
+    // Invalid motor value
+    if (display)
+        display->printf("ERROR: Invalid motor value: %d, range (0 - %d)!\r\n",
+                        motor, r4aPca9685MotorTableEntries - 1);
+    return false;
+}
+
+//*********************************************************************
+// Brake all the motors
+// Start bit, I2C device address, ACK, register address, ACK, 32 data bytes
+// with ACKs and a stop bit, all at 400 KHz
+// 770 uSec = (1+8+1+8+1+((8+1)×32)+1)÷(400×1000)
+// Returns true if successful, false otherwise
+bool r4aPca9685MotorBrakeAll(int16_t speed, Print * display)
+{
+    bool success;
+
+    // Apply the brakes to all of the motors
+    success = true;
+    for (int motor = 0; motor < r4aPca9685MotorTableEntries; motor++)
+        success &= r4aPca9685MotorTable[motor]->brake(speed, display);
+    for (int motor = 0; motor < r4aPca9685MotorTableEntries; motor++)
+        success &= r4aPca9685MotorTable[motor]->write(display);
+    return success;
+}
+
+//*********************************************************************
+// Place the motor in the coasting state
+// Start bit, I2C device address, ACK, register address, ACK, 8 data bytes
+// with ACKs and a stop bit, all at 400 KHz
+// 230 uSec = (1+8+1+8+1+((8+1)×8)+1)÷(400×1000)
+// Returns true if successful, false otherwise
+bool r4aPca9685MotorCoast(uint8_t motor, Print * display)
+{
+    // Validate the motor value
+    if (motor < r4aPca9685MotorTableEntries)
+        // Set the coasting state
+        return r4aPca9685MotorTable[motor]->coast(display)
+            && r4aPca9685MotorTable[motor]->write(display);
+
+    // Invalid motor value
+    if (display)
+        display->printf("ERROR: Invalid motor value: %d, range (0 - %d)!\r\n",
+                        motor, r4aPca9685MotorTableEntries - 1);
+    return false;
+}
+
+//*********************************************************************
+// Place the motors in the coasting state
+// Start bit, I2C device address, ACK, register address, ACK, 4 data bytes
+// with ACKs and a stop bit, all at 400 KHz
+// 410 uSec = (1+8+1+8+1+((8+1)×16)+1)÷(400×1000)
+// Returns true if successful, false otherwise
+bool r4aPca9685MotorCoastAll(Print * display)
+{
+    bool success;
+
+    // Set all motors coasting
+    success = true;
+    for (int motor = 0; motor < r4aPca9685MotorTableEntries; motor++)
+        success &= r4aPca9685MotorTable[motor]->speed(0, display);
+    for (int motor = 0; motor < r4aPca9685MotorTableEntries; motor++)
+        success &= r4aPca9685MotorTable[motor]->write(display);
+    return success;
+}
+
+//*********************************************************************
+// Display the motor state
+void r4aPca9685MotorDisplayState(Print * display)
+{
+    display->println();
+    display->println("Motor State");
+    display->println("-----------");
+    display->println();
+    for (int motor = 0; motor < r4aPca9685MotorTableEntries; motor++)
+    {
+        display->printf("Motor %d: ", motor);
+        r4aPca9685MotorTable[motor]->display(display);
+    }
+}
+
+//*********************************************************************
+// Drive the motor forward
+// Start bit, I2C device address, ACK, register address, ACK, 8 data bytes
+// with ACKs and a stop bit, all at 400 KHz
+// 230 uSec = (1+8+1+8+1+((8+1)×8)+1)÷(400×1000)
+// Returns true if successful, false otherwise
+bool r4aPca9685MotorForward(uint8_t motor, int16_t speed, Print * display)
+{
+    // Validate the motor value
+    if (motor < r4aPca9685MotorTableEntries)
+        // Set the speed state
+        return r4aPca9685MotorTable[motor]->speed(speed, display)
+            && r4aPca9685MotorTable[motor]->write(display);
+
+    // Invalid motor value
+    if (display)
+        display->printf("ERROR: Invalid motor value: %d, range (0 - %d)!\r\n",
+                        motor, r4aPca9685MotorTableEntries - 1);
+    return false;
+}
+
+//*********************************************************************
+// Drive the motor reverse
+// Start bit, I2C device address, ACK, register address, ACK, 8 data bytes
+// with ACKs and a stop bit, all at 400 KHz
+// 230 uSec = (1+8+1+8+1+((8+1)×8)+1)÷(400×1000)
+// Returns true if successful, false otherwise
+bool r4aPca9685MotorReverse(uint8_t motor, int16_t speed, Print * display)
+{
+    // Validate the motor value
+    if (motor < r4aPca9685MotorTableEntries)
+        // Set the reverse motor speed
+        return r4aPca9685MotorTable[motor]->speed(-speed, display)
+            && r4aPca9685MotorTable[motor]->write(display);
+
+    // Invalid motor value
+    if (display)
+        display->printf("ERROR: Invalid motor value: %d, range (0 - %d)!\r\n",
+                        motor, r4aPca9685MotorTableEntries - 1);
+    return false;
+}
+
+//*********************************************************************
+// Set the motor speed
+// Start bit, I2C device address, ACK, register address, ACK, 8 data bytes
+// with ACKs and a stop bit, all at 400 KHz
+// 230 uSec = (1+8+1+8+1+((8+1)×8)+1)÷(400×1000)
+// Returns true if successful, false otherwise
+bool r4aPca9685MotorSetSpeed(uint8_t motor, int16_t speed, Print * display)
+{
+    // Validate the motor value
+    if (motor < r4aPca9685MotorTableEntries)
+        // Set the speed value
+        return r4aPca9685MotorTable[motor]->speed(speed, display)
+            && r4aPca9685MotorTable[motor]->write(display);
+
+    // Invalid motor value
+    if (display)
+        display->printf("ERROR: Invalid motor value: %d, range (0 - %d)!\r\n",
+                        motor, r4aPca9685MotorTableEntries - 1);
+    return false;
+}
+
+//*********************************************************************
+// Initialize the motors
+bool r4aPca9685MotorSetup(Print * display)
+{
+    // Apply the brakes
+    return r4aPca9685MotorBrakeAll(R4A_PCA9685_MOTOR_SPEED_MAX, display);
+}
+
 
 //*********************************************************************
 // Get the minus channel associated with this motor

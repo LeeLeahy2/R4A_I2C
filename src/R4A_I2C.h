@@ -491,6 +491,101 @@ public:
     bool write(Print * display = nullptr);
 };
 
+extern R4A_PCA9685_MOTOR * const r4aPca9685MotorTable[]; // Table of motors
+extern const int r4aPca9685MotorTableEntries; // Number of motors in the table
+
+// Brake the motor
+// Start bit, I2C device address, ACK, register address, ACK, 8 data bytes
+// with ACKs and a stop bit, all at 400 KHz
+// 230 uSec = (1+8+1+8+1+((8+1)×8)+1)÷(400×1000)
+// Inputs:
+//   motor: Zero based index into r4aPca9685MotorTable
+//   speed: Speed of the motor, range: 0 to 4096
+//   display: Object address used to display debug messages or nullptr
+// Outputs:
+//   Returns true if successful, false upon failure
+bool r4aPca9685MotorBrake(uint8_t motor, int16_t speed = 4096, Print * display = nullptr);
+
+// Brake all the motors
+// Start bit, I2C device address, ACK, register address, ACK, 32 data bytes
+// with ACKs and a stop bit, all at 400 KHz
+// 770 uSec = (1+8+1+8+1+((8+1)×32)+1)÷(400×1000)
+// Inputs:
+//   speed: Speed of the motor, range: 0 to 4096
+//   display: Object address used to display debug messages or nullptr
+// Outputs:
+//   Returns true if successful, false upon failure
+bool r4aPca9685MotorBrakeAll(int16_t speed = 4096, Print * display = nullptr);
+
+// Place the motor in the coasting state
+// Start bit, I2C device address, ACK, register address, ACK, 8 data bytes
+// with ACKs and a stop bit, all at 400 KHz
+// 230 uSec = (1+8+1+8+1+((8+1)×8)+1)÷(400×1000)
+// Inputs:
+//   motor: Zero based index into r4aPca9685MotorTable
+//   display: Object address used to display debug messages or nullptr
+// Outputs:
+//   Returns true if successful, false upon failure
+bool r4aPca9685MotorCoast(uint8_t motor, Print * display = nullptr);
+
+// Place the motors in the coasting state
+// Start bit, I2C device address, ACK, register address, ACK, 4 data bytes
+// with ACKs and a stop bit, all at 400 KHz
+// 410 uSec = (1+8+1+8+1+((8+1)×16)+1)÷(400×1000)
+// Inputs:
+//   display: Object address used to display debug messages or nullptr
+// Outputs:
+//   Returns true if successful, false upon failure
+bool r4aPca9685MotorCoastAll(Print * display = nullptr);
+
+// Display the motor state
+// Inputs:
+//   display: Object address used to display debug messages or nullptr
+void r4aPca9685MotorDisplayState(Print * display = &Serial);
+
+// Drive the motor forward
+// Start bit, I2C device address, ACK, register address, ACK, 8 data bytes
+// with ACKs and a stop bit, all at 400 KHz
+// 230 uSec = (1+8+1+8+1+((8+1)×8)+1)÷(400×1000)
+// Inputs:
+//   motor: Zero based index into r4aPca9685MotorTable
+//   speed: Speed of the motor, range: 0 to 4096
+//   display: Object address used to display debug messages or nullptr
+// Outputs:
+//   Returns true if successful, false upon failure
+bool r4aPca9685MotorForward(uint8_t motor, int16_t speed, Print * display = nullptr);
+
+// Drive the motor reverse
+// Start bit, I2C device address, ACK, register address, ACK, 8 data bytes
+// with ACKs and a stop bit, all at 400 KHz
+// 230 uSec = (1+8+1+8+1+((8+1)×8)+1)÷(400×1000)
+// Inputs:
+//   motor: Zero based index into r4aPca9685MotorTable
+//   speed: Speed of the motor, range: 0 to 4096
+//   display: Object address used to display debug messages or nullptr
+// Outputs:
+//   Returns true if successful, false upon failure
+bool r4aPca9685MotorReverse(uint8_t motor, int16_t speed, Print * display = nullptr);
+
+// Set the motor speed
+// Start bit, I2C device address, ACK, register address, ACK, 8 data bytes
+// with ACKs and a stop bit, all at 400 KHz
+// 230 uSec = (1+8+1+8+1+((8+1)×8)+1)÷(400×1000)
+// Inputs:
+//   motor: Zero based index into r4aPca9685MotorTable
+//   speed: Speed of the motor, range: -4096 to 4096
+//   display: Object address used to display debug messages or nullptr
+// Outputs:
+//   Returns true if successful, false upon failure
+bool r4aPca9685MotorSetSpeed(uint8_t motor, int16_t speed, Print * display = nullptr);
+
+// Initialize the motors
+// Inputs:
+//   display: Object address used to display debug messages or nullptr
+// Outputs:
+//   Returns true if successful, false upon failure
+bool r4aPca9685MotorSetup(Print * display = nullptr);
+
 //****************************************
 // PCA9685 Servo API
 //****************************************
