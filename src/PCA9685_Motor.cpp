@@ -41,6 +41,8 @@ bool R4A_PCA9685_MOTOR::brake(int16_t brakeValue, Print * display)
     if (_dualChannel)
         return _pca9685->bufferLedOnOff(_plusChannel, brakeValue, display)
             && _pca9685->bufferLedOnOff(_minusChannel, brakeValue, display);
+    else if (display)
+        display->println("ERROR: Single channel motor unable to brake!");
     return false;
 }
 
