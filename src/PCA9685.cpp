@@ -642,6 +642,10 @@ bool R4A_PCA9685::writeBufferedRegisters(Print * display)
     uint8_t firstRegisterAddress;
     bool success;
 
+    // Fast exit if no channels are modified
+    if (!_channelModified)
+        return true;
+
     success = true;
     for (channel = 0; channel < R4A_PCA9685_CHANNEL_COUNT; channel++)
     {
