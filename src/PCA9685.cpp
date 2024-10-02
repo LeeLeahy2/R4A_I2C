@@ -164,15 +164,17 @@ bool R4A_PCA9685::bufferLedOnOff(uint8_t channel,
     // Validate the channel
     if (channel >= R4A_PCA9685_CHANNEL_COUNT)
     {
-        display->println("ERROR: Invalid channel number, use (0 - 15)!\r\n");
+        if (display)
+            display->println("ERROR: Invalid channel number, use (0 - 15)!\r\n");
         return false;
     }
 
     // Validate the minimum and maximum
     if ((onTime < _min[channel]) || (onTime > _max[channel]))
     {
-        display->printf("ERROR: onTime (%d) is invalid, range (%d - %d)!\r\n",
-                        onTime, _min[channel], _max[channel]);
+        if (display)
+            display->printf("ERROR: onTime (%d) is invalid, range (%d - %d)!\r\n",
+                            onTime, _min[channel], _max[channel]);
         return false;
     }
 
@@ -551,21 +553,24 @@ bool R4A_PCA9685::setMinMax(uint8_t channel,
     // Validate the channel
     if (channel >= R4A_PCA9685_CHANNEL_COUNT)
     {
-        display->println("ERROR: Invalid channel number, use (0 - 15)!\r\n");
+        if (display)
+            display->println("ERROR: Invalid channel number, use (0 - 15)!\r\n");
         return false;
     }
 
     // Validate the minimum
     if ((minimum < 0) || (minimum > 4096))
     {
-        display->println("ERROR: Invalid minimum value, valid range (0 - 4096)!\r\n");
+        if (display)
+            display->println("ERROR: Invalid minimum value, valid range (0 - 4096)!\r\n");
         return false;
     }
 
     // Validate the maximum
     if ((maximum < 0) || (maximum > 4096))
     {
-        display->println("ERROR: Invalid maximum value, valid range (0 - 4096)!\r\n");
+        if (display)
+            display->println("ERROR: Invalid maximum value, valid range (0 - 4096)!\r\n");
         return false;
     }
 
@@ -585,21 +590,24 @@ bool R4A_PCA9685::setMinMaxDegrees(uint8_t channel,
     // Validate the channel
     if (channel >= R4A_PCA9685_CHANNEL_COUNT)
     {
-        display->println("ERROR: Invalid channel number, use (0 - 15)!\r\n");
+        if (display)
+            display->println("ERROR: Invalid channel number, use (0 - 15)!\r\n");
         return false;
     }
 
     // Validate the minimum
     if ((minimum < 0) || (minimum >= 180))
     {
-        display->println("ERROR: Invalid minimum value, valid range (0 - 4096)!\r\n");
+        if (display)
+            display->println("ERROR: Invalid minimum value, valid range (0 - 4096)!\r\n");
         return false;
     }
 
     // Validate the maximum
     if ((maximum < 0) || (maximum >= 180))
     {
-        display->println("ERROR: Invalid maximum value, valid range (0 - 4096)!\r\n");
+        if (display)
+            display->println("ERROR: Invalid maximum value, valid range (0 - 4096)!\r\n");
         return false;
     }
 
