@@ -222,7 +222,7 @@ public:
     //   Returns true if successful and false otherwise
     bool bufferLedOnOff(uint8_t channel,
                         int16_t onTime,
-                        Print * display = &Serial);
+                        Print * display = nullptr);
 
     // Buffer a copy of the servo position will be written to the PCA9685 at
     // a later time
@@ -234,7 +234,7 @@ public:
     //   Returns true if successful and false otherwise
     bool bufferServoPosition(uint8_t channel,
                              uint8_t degrees,
-                             Print * display = &Serial);
+                             Print * display = nullptr);
 
     // Convert channel number into a PCA9685 register address
     // Inputs:
@@ -339,7 +339,7 @@ public:
     bool setMinMax(uint8_t channel,
                    int16_t minimum,
                    int16_t maximum,
-                   Print * display = &Serial);
+                   Print * display = nullptr);
 
     // Set the minimum and maximum values
     // Inputs:
@@ -352,7 +352,7 @@ public:
     bool setMinMaxDegrees(uint8_t channel,
                           uint8_t minimum,
                           uint8_t maximum,
-                          Print * display = &Serial);
+                          Print * display = nullptr);
 
     // Write the buffered register data to the PCB9685 registers
     // Inputs:
