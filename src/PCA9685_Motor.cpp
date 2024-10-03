@@ -322,3 +322,197 @@ bool R4A_PCA9685_MOTOR::write(Print * display)
 {
     return _pca9685->writeBufferedRegisters(display);
 }
+
+//****************************************
+// PCA9685 Motor Menu API
+//****************************************
+
+//*********************************************************************
+// Display the help text with mm and ssss
+void r4aPca9685MotorMenuHelpMm(const struct _R4A_MENU_ENTRY * menuEntry,
+                               const char * align,
+                               Print * display)
+{
+    display->printf("%s mm: %s%s\r\n",
+                    menuEntry->command, align, menuEntry->helpText);
+}
+
+//*********************************************************************
+// Display the help text with mm and ssss
+void r4aPca9685MotorMenuHelpMmSsss(const struct _R4A_MENU_ENTRY * menuEntry,
+                                   const char * align,
+                                   Print * display)
+{
+    display->printf("%s mm ssss: %s%s\r\n",
+                    menuEntry->command, align, menuEntry->helpText);
+}
+
+//*********************************************************************
+// Get the motor number
+bool r4aPca9685MotorMenuGetMotor(const R4A_MENU_ENTRY * menuEntry,
+                                 const char * command,
+                                 int * values,
+                                 uint8_t * motor)
+{
+    int m;
+
+    // Get the parameter name
+    String line = String(&command[strlen(menuEntry->command)]);
+
+    // Strip white space from the beginning of the name
+    line.trim();
+
+    // Get the value
+    *values = sscanf(line.c_str(), "%d", &m);
+
+    // Determine if the value is within range
+    if ((*values == 1)
+        && (m >= 0)
+        && (m < r4aPca9685MotorTableEntries));
+    {
+        *motor = m;
+        return true;
+    }
+    return false;
+}
+
+//*********************************************************************
+// Get the motor number and speed value
+bool r4aPca9685MotorMenuGetMotorSpeed(const R4A_MENU_ENTRY * menuEntry,
+                                      const char * command,
+                                      int * values,
+                                      uint8_t * motor,
+                                      uint16_t * speed)
+{
+    int m;
+    int spd;
+
+    // Get the parameter name
+    String line = String(&command[strlen(menuEntry->command)]);
+
+    // Strip white space from the beginning of the name
+    line.trim();
+
+    // Get the values
+    *values = sscanf(line.c_str(), "%d %d", &m, &spd);
+
+    // Determine if the values are within range
+    if ((*values == 2)
+        && (m >= 0)
+        && (m < r4aPca9685MotorTableEntries)
+        && (spd >= 0)
+        && (spd <= R4A_PCA9685_MOTOR_SPEED_MAX))
+    {
+        *motor = m;
+        *speed = spd;
+        return true;
+    }
+    else if (*values == 1)
+        *motor = m;
+    return false;
+}
+
+//*********************************************************************
+// Brake the motors
+void r4aPca9685MotorMenuBrake(const R4A_MENU_ENTRY * menuEntry,
+                              const char * command,
+                              Print * display)
+{
+    uint8_t motor;
+    uint16_t speed;
+    int values;
+
+    // Parse the command line
+    if (r4aPca9685MotorMenuGetMotorSpeed(menuEntry, command, &values, &motor, &speed))
+        r4aPca9685MotorTable[motor]->brake(speed);
+    else if (values <= 0)
+        display->printf("Please specify a motor (0 - %d) for mm\r\n", r4aPca9685MotorTableEntries - 1);
+    else if (values == 1)
+        display->printf("Please specify a speed (0 - %d) for ssss\r\n", R4A_PCA9685_MOTOR_SPEED_MAX);
+    else if ((motor < 0) || (motor > r4aPca9685MotorTableEntries))
+        display->printf("Invalid motor value, use (0 - %d)!\r\n", r4aPca9685MotorTableEntries - 1);
+    else
+        display->printf("Invalid speed value, use (0 - %d)!\r\n", R4A_PCA9685_MOTOR_SPEED_MAX);
+}
+
+//*********************************************************************
+// Coast the motors
+void r4aPca9685MotorMenuCoast(const R4A_MENU_ENTRY * menuEntry,
+                              const char * command,
+                              Print * display)
+{
+    uint8_t motor;
+    int values;
+
+    // Parse the command line
+    if (r4aPca9685MotorMenuGetMotor(menuEntry, command, &values, &motor))
+        r4aPca9685MotorTable[motor]->coast();
+    else
+        display->printf("Invalid motor value, use (0 - %d)!\r\n", r4aPca9685MotorTableEntries - 1);
+}
+
+//*********************************************************************
+// Display the motors
+void r4aPca9685MotorMenuDisplay(const R4A_MENU_ENTRY * menuEntry,
+                          const char * command,
+                          Print * display)
+{
+    // Display the motor states
+    for (int motor = 0; motor < r4aPca9685MotorTableEntries; motor++)
+        r4aPca9685MotorTable[motor]->display(display);
+}
+
+//*********************************************************************
+// Drive the motors forward
+void r4aPca9685MotorMenuForward(const R4A_MENU_ENTRY * menuEntry,
+                                const char * command,
+                                Print * display)
+{
+    uint8_t motor;
+    uint16_t speed;
+    int values;
+
+    // Parse the command line
+    if (r4aPca9685MotorMenuGetMotorSpeed(menuEntry, command, &values, &motor, &speed))
+        r4aPca9685MotorForward(motor, speed, display);
+    else if (values <= 0)
+        display->printf("Please specify a motor (0 - %d) for mm\r\n", r4aPca9685MotorTableEntries - 1);
+    else if (values == 1)
+        display->printf("Please specify a speed (0 - %d) for ssss\r\n", R4A_PCA9685_MOTOR_SPEED_MAX);
+    else if ((motor < 0) || (motor > r4aPca9685MotorTableEntries))
+        display->printf("Invalid motor value, use (0 - %d)!\r\n", r4aPca9685MotorTableEntries - 1);
+    else
+        display->printf("Invalid speed value, use (0 - %d)!\r\n", R4A_PCA9685_MOTOR_SPEED_MAX);
+}
+
+//*********************************************************************
+// Drive the motors in reverse
+void r4aPca9685MotorMenuReverse(const R4A_MENU_ENTRY * menuEntry,
+                                const char * command,
+                                Print * display)
+{
+    uint8_t motor;
+    uint16_t speed;
+    int values;
+
+    // Parse the command line
+    if (r4aPca9685MotorMenuGetMotorSpeed(menuEntry, command, &values, &motor, &speed))
+        r4aPca9685MotorReverse(motor, speed);
+    else if (values <= 0)
+        display->printf("Please specify a motor (0 - %d) for mm\r\n", r4aPca9685MotorTableEntries - 1);
+    else if (values == 1)
+        display->printf("Please specify a speed (0 - %d) for ssss\r\n", R4A_PCA9685_MOTOR_SPEED_MAX);
+    else if ((motor < 0) || (motor > r4aPca9685MotorTableEntries))
+        display->printf("Invalid motor value, use (0 - %d)!\r\n", r4aPca9685MotorTableEntries - 1);
+    else
+        display->printf("Invalid speed value, use (0 - %d)!\r\n", R4A_PCA9685_MOTOR_SPEED_MAX);
+}
+
+//*********************************************************************
+// Stop the motors
+void r4aPca9685MotorMenuStop(const R4A_MENU_ENTRY * menuEntry,
+                                const char * command,
+                                Print * display)
+{
+    r4aPca9685MotorBrakeAll(R4A_PCA9685_MOTOR_SPEED_MAX, display);
+}

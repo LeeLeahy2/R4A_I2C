@@ -587,6 +587,85 @@ bool r4aPca9685MotorSetSpeed(uint8_t motor, int16_t speed, Print * display = nul
 bool r4aPca9685MotorSetup(Print * display = nullptr);
 
 //****************************************
+// PCA9685 Motor Menu API
+//****************************************
+
+#define R4A_PCA9685_MOTOR_MENU_ENTRIES      7
+extern const R4A_MENU_ENTRY r4aPca9685MotorMenuTable[];
+
+// Brake the motors
+// Inputs:
+//   menuEntry: Address of the object describing the menu entry
+//   command: Zero terminated command string
+//   display: Device used for output
+void r4aPca9685MotorMenuBrake(const R4A_MENU_ENTRY * menuEntry,
+                              const char * command,
+                              Print * display = nullptr);
+
+// Coast the motors
+// Inputs:
+//   menuEntry: Address of the object describing the menu entry
+//   command: Zero terminated command string
+//   display: Device used for output
+void r4aPca9685MotorMenuCoast(const R4A_MENU_ENTRY * menuEntry,
+                              const char * command,
+                              Print * display = nullptr);
+
+// Display the motors
+// Inputs:
+//   menuEntry: Address of the object describing the menu entry
+//   command: Zero terminated command string
+//   display: Device used for output
+void r4aPca9685MotorMenuDisplay(const R4A_MENU_ENTRY * menuEntry,
+                          const char * command,
+                          Print * display = nullptr);
+
+// Drive the motors forward
+// Inputs:
+//   menuEntry: Address of the object describing the menu entry
+//   command: Zero terminated command string
+//   display: Device used for output
+void r4aPca9685MotorMenuForward(const R4A_MENU_ENTRY * menuEntry,
+                                const char * command,
+                                Print * display = nullptr);
+
+// Display the help text with mm
+// Inputs:
+//   menuEntry: Address of the object describing the menu entry
+//   align: Zero terminated string of spaces for alignment
+//   display: Device used for output
+void r4aPca9685MotorMenuHelpMm(const struct _R4A_MENU_ENTRY * menuEntry,
+                               const char * align,
+                               Print * display = &Serial);
+
+// Display the help text with mm and ssss
+// Inputs:
+//   menuEntry: Address of the object describing the menu entry
+//   align: Zero terminated string of spaces for alignment
+//   display: Device used for output
+void r4aPca9685MotorMenuHelpMmSsss(const struct _R4A_MENU_ENTRY * menuEntry,
+                                   const char * align,
+                                   Print * display = &Serial);
+
+// Drive the motors in reverse
+// Inputs:
+//   menuEntry: Address of the object describing the menu entry
+//   command: Zero terminated command string
+//   display: Device used for output
+void r4aPca9685MotorMenuReverse(const R4A_MENU_ENTRY * menuEntry,
+                                const char * command,
+                                Print * display = nullptr);
+
+// Stop the motors
+// Inputs:
+//   menuEntry: Address of the object describing the menu entry
+//   command: Zero terminated command string
+//   display: Device used for output
+void r4aPca9685MotorMenuStop(const R4A_MENU_ENTRY * menuEntry,
+                                const char * command,
+                                Print * display = nullptr);
+
+//****************************************
 // PCA9685 Servo API
 //****************************************
 
