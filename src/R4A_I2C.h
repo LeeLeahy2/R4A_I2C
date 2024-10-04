@@ -732,6 +732,61 @@ public:
 };
 
 //****************************************
+// PCA9685 Servo Menu API
+//****************************************
+
+extern R4A_PCA9685_SERVO * const r4aPca9685ServoTable[]; // Table of servos
+extern const int r4aPca9685ServoTableEntries; // Number of servos in the table
+
+#define R4A_PCA9685_SERVO_MENU_ENTRIES      5
+extern const R4A_MENU_ENTRY r4aPca9685ServoMenuTable[];
+
+// Display the help text with ddd
+// Inputs:
+//   menuEntry: Address of the object describing the menu entry
+//   align: Zero terminated string of spaces for alignment
+//   display: Device used for output
+void r4aPca9685ServoMenuHelpDdd(const struct _R4A_MENU_ENTRY * menuEntry,
+                                const char * align,
+                                Print * display);
+
+// Display the help text with s and ddd
+// Inputs:
+//   menuEntry: Address of the object describing the menu entry
+//   align: Zero terminated string of spaces for alignment
+//   display: Device used for output
+void r4aPca9685ServoMenuHelpSDdd(const struct _R4A_MENU_ENTRY * menuEntry,
+                                 const char * align,
+                                 Print * display);
+
+// Display the servo states
+// Inputs:
+//   menuEntry: Address of the object describing the menu entry
+//   command: Zero terminated command string
+//   display: Device used for output
+void r4aPca9685ServoMenuDisplay(const R4A_MENU_ENTRY * menuEntry,
+                                const char * command,
+                                Print * display = nullptr);
+
+// Set the servo specified by the menu parameter to ddd degrees
+// Inputs:
+//   menuEntry: Address of the object describing the menu entry
+//   command: Zero terminated command string
+//   display: Device used for output
+void r4aPca9685ServoMenuMove(const R4A_MENU_ENTRY * menuEntry,
+                             const char * command,
+                             Print * display = nullptr);
+
+// Set servo s to ddd degrees
+// Inputs:
+//   menuEntry: Address of the object describing the menu entry
+//   command: Zero terminated command string
+//   display: Device used for output
+void r4aPca9685ServoMenuSet(const R4A_MENU_ENTRY * menuEntry,
+                            const char * command,
+                            Print * display = nullptr);
+
+//****************************************
 // PCF8574 API
 //****************************************
 
