@@ -677,6 +677,10 @@ private:
     const uint8_t _channel;         // Channel for the servo
 
 public:
+
+    const uint8_t _minimum;         // Degrees minimum
+    const uint8_t _maximum;         // Degrees maximum
+
     // Constructor
     // Inputs:
     //   R4A_PCA9685 * pca9685: Address of the R4A_PCA9684 object
@@ -688,7 +692,9 @@ public:
                       uint8_t minimum = 0,
                       uint8_t maximum = 180)
         : _pca9685{pca9685},
-          _channel{channel}
+          _channel{channel},
+          _minimum{minimum},
+          _maximum{maximum}
     {
         // Set the maximum and minimum for the servo
         _pca9685->setMinMaxDegrees(_channel, minimum, maximum);
