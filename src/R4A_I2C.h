@@ -148,6 +148,60 @@ class R4A_I2C_BUS
 };
 
 //****************************************
+// I2C menu API
+//****************************************
+
+extern R4A_I2C_BUS * r4aI2cBus; // Address of I2C bus object
+
+extern const R4A_MENU_ENTRY r4aI2cMenuTable[]; // I2C menu
+#define R4A_I2C_MENU_ENTRIES        4   // Number of menu entries
+
+// Display the help text with mm and ssss
+// Inputs:
+//   menuEntry: Address of the object describing the menu entry
+//   align: Zero terminated string of spaces for alignment
+//   display: Device used for output
+void r4aI2cMenuHelpAaRr(const struct _R4A_MENU_ENTRY * menuEntry,
+                        const char * align,
+                        Print * display);
+
+// Display the help text with mm and ssss
+// Inputs:
+//   menuEntry: Address of the object describing the menu entry
+//   align: Zero terminated string of spaces for alignment
+//   display: Device used for output
+void r4aI2cMenuHelpAaRrDd(const struct _R4A_MENU_ENTRY * menuEntry,
+                          const char * align,
+                          Print * display);
+
+// Enumerate the I2C bus
+// Inputs:
+//   menuEntry: Address of the object describing the menu entry
+//   command: Zero terminated command string
+//   display: Device used for output
+void r4aI2cMenuEnumerate(const R4A_MENU_ENTRY * menuEntry,
+                         const char * command,
+                         Print * display);
+
+// Read data from the I2C device
+// Inputs:
+//   menuEntry: Address of the object describing the menu entry
+//   command: Zero terminated command string
+//   display: Device used for output
+void r4aI2cMenuRead(const R4A_MENU_ENTRY * menuEntry,
+                    const char * command,
+                    Print * display);
+
+// Write data to the I2C device
+// Inputs:
+//   menuEntry: Address of the object describing the menu entry
+//   command: Zero terminated command string
+//   display: Device used for output
+void r4aI2cMenuWrite(const R4A_MENU_ENTRY * menuEntry,
+                     const char * command,
+                     Print * display);
+
+//****************************************
 // PA9685 API
 //****************************************
 

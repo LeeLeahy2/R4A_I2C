@@ -141,3 +141,191 @@ bool R4A_I2C_BUS::write(uint8_t deviceI2cAddress,
     // Return the write status
     return status;
 }
+
+//****************************************
+// I2C menu API
+//****************************************
+
+//*********************************************************************
+// Display the help text with mm and ssss
+void r4aI2cMenuHelpAaRr(const struct _R4A_MENU_ENTRY * menuEntry,
+                        const char * align,
+                        Print * display)
+{
+    display->printf("%s aa rr: %s%s\r\n",
+                    menuEntry->command, align, menuEntry->helpText);
+}
+
+//*********************************************************************
+// Display the help text with mm and ssss
+void r4aI2cMenuHelpAaRrDd(const struct _R4A_MENU_ENTRY * menuEntry,
+                          const char * align,
+                          Print * display)
+{
+    display->printf("%s aa rr dd: %s%s\r\n",
+                    menuEntry->command, align, menuEntry->helpText);
+}
+
+//*********************************************************************
+// Get the I2C address and register numbers
+bool r4aI2cMenuGetAddressRegister(const R4A_MENU_ENTRY * menuEntry,
+                                  const char * command,
+                                  int * values,
+                                  uint8_t * i2cAddress,
+                                  uint8_t * i2cRegister)
+{
+    int a;
+    int r;
+
+    // Get the parameter name
+    String line = String(&command[strlen(menuEntry->command)]);
+
+    // Strip white space from the beginning of the name
+    line.trim();
+
+    // Get the values
+    *values = sscanf(line.c_str(), "%02x %02x", &a, &r);
+
+    // Determine if the values are within range
+    if ((*values == 2)
+        && (a >= 0)
+        && (a <= 0x7f)
+        && (r >= 0)
+        && (r <= 0xff))
+    {
+        *i2cAddress = a;
+        *i2cRegister = r;
+        return true;
+    }
+    else if (*values == 1)
+    {
+        *i2cAddress = a;
+        return true;
+    }
+    return false;
+}
+
+//*********************************************************************
+// Get the device, register and data values
+bool r4aI2cMenuGetAddressRegisterData(const R4A_MENU_ENTRY * menuEntry,
+                                      const char * command,
+                                      int * values,
+                                      uint8_t * i2cAddress,
+                                      uint8_t * i2cRegister,
+                                      uint8_t * data)
+{
+    int a;
+    int r;
+    int w;
+
+    // Get the parameter name
+    String line = String(&command[strlen(menuEntry->command)]);
+
+    // Strip white space from the beginning of the name
+    line.trim();
+
+    // Get the values
+    *values = sscanf(line.c_str(), "%2x %2x %2x", &a, &r, &w);
+
+    // Determine if the values are within range
+    if ((*values == 3)
+        && (a >= 0)
+        && (a <= 0x7f)
+        && (r >= 0)
+        && (r <= 0xff)
+        && (w >= 0)
+        && (w <= 0xff))
+    {
+        *i2cAddress = a;
+        *i2cRegister = r;
+        *data = w;
+        return true;
+    }
+    else if (*values == 2)
+    {
+        *i2cAddress = a;
+        *data = r;
+        return true;
+    }
+    else if (*values == 1)
+        *i2cAddress = a;
+    return false;
+}
+
+//*********************************************************************
+// Enumerate the I2C bus
+void r4aI2cMenuEnumerate(const R4A_MENU_ENTRY * menuEntry,
+                         const char * command,
+                         Print * display)
+{
+    r4aI2cBus->enumerate(display);
+}
+
+//*********************************************************************
+// Read data from the I2C device
+void r4aI2cMenuRead(const R4A_MENU_ENTRY * menuEntry,
+                    const char * command,
+                    Print * display)
+{
+    int bytesRead;
+    uint8_t data;
+    uint8_t i2cAddress;
+    uint8_t i2cRegister;
+    int values;
+
+    // Parse the command line
+    if (r4aI2cMenuGetAddressRegister(menuEntry, command, &values, &i2cAddress, &i2cRegister))
+    {
+        bytesRead = r4aI2cBus->read(i2cAddress,
+                                    (values == 2) ? &i2cRegister : nullptr,
+                                    (values == 2) ? sizeof(i2cRegister) : 0,
+                                    &data,
+                                    sizeof(data),
+                                    nullptr,
+                                    true);       // End of transaction
+        if (bytesRead != sizeof(data))
+            display->println("Failed to read register!");
+        else if (values == 1)
+            display->printf("0x%02x: 0x%02x (%d)\r\n",
+                            i2cAddress,
+                            data, data);
+        else
+            display->printf("0x%02x[0x%02x]: 0x%02x (%d)\r\n",
+                            i2cAddress,
+                            i2cRegister,
+                            data, data);
+    }
+    else if (values <= 0)
+        display->println("Please specify the I2C address (0 - 0x7f) for aa");
+}
+
+//*********************************************************************
+// Write data to the I2C device
+void r4aI2cMenuWrite(const R4A_MENU_ENTRY * menuEntry,
+                     const char * command,
+                     Print * display)
+{
+    int bytesWritten;
+    uint8_t data;
+    uint8_t i2cAddress;
+    uint8_t i2cRegister;
+    int values;
+
+    // Parse the command line
+    if (r4aI2cMenuGetAddressRegisterData(menuEntry, command, &values, &i2cAddress, &i2cRegister, &data))
+    {
+        bytesWritten = r4aI2cBus->write(i2cAddress,
+                                        (values == 3) ? &i2cRegister : nullptr,
+                                        (values == 3) ? sizeof(i2cRegister) : 0,
+                                        &data,
+                                        sizeof(data),
+                                        nullptr,
+                                        true);       // End of transaction
+        if (bytesWritten != (values - 1))
+            display->println("Failed to write register!");
+    }
+    else if (values <= 0)
+        display->println("Please specify the I2C address (0 - 0x7f) for aa");
+    else if (values == 1)
+        display->println("Please specify the I2C register (0 - 0xff) for rr");
+}
