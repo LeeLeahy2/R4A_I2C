@@ -474,7 +474,7 @@ void r4aPca9685MotorMenuForward(const R4A_MENU_ENTRY * menuEntry,
 
     // Parse the command line
     if (r4aPca9685MotorMenuGetMotorSpeed(menuEntry, command, &values, &motor, &speed))
-        r4aPca9685MotorForward(motor, speed, display);
+        r4aPca9685MotorForward(motor, speed);
     else if (values <= 0)
         display->printf("Please specify a motor (0 - %d) for mm\r\n", r4aPca9685MotorTableEntries - 1);
     else if (values == 1)
@@ -514,5 +514,5 @@ void r4aPca9685MotorMenuStop(const R4A_MENU_ENTRY * menuEntry,
                                 const char * command,
                                 Print * display)
 {
-    r4aPca9685MotorBrakeAll(R4A_PCA9685_MOTOR_SPEED_MAX, display);
+    r4aPca9685MotorBrakeAll(R4A_PCA9685_MOTOR_SPEED_MAX);
 }
