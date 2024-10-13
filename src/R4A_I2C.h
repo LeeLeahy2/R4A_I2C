@@ -38,6 +38,10 @@ typedef struct _R4A_I2C_DEVICE_DESCRIPTION
     char * displayName;     // Name to display when the device is found
 } R4A_I2C_DEVICE_DESCRIPTION;
 
+class R4A_I2C_BUS;
+
+extern R4A_I2C_BUS * r4aI2cBus; // Address of I2C bus object
+
 // I2C bus
 class R4A_I2C_BUS
 {
@@ -61,6 +65,7 @@ class R4A_I2C_BUS
                 int deviceTableEntries)
         : _deviceTable{deviceTable}, _deviceTableEntries{deviceTableEntries}
     {
+        r4aI2cBus = this;
     }
 
     // Delete the object
@@ -150,8 +155,6 @@ class R4A_I2C_BUS
 //****************************************
 // I2C menu API
 //****************************************
-
-extern R4A_I2C_BUS * r4aI2cBus; // Address of I2C bus object
 
 extern const R4A_MENU_ENTRY r4aI2cMenuTable[]; // I2C menu
 #define R4A_I2C_MENU_ENTRIES        4   // Number of menu entries
