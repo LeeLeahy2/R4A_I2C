@@ -13,6 +13,9 @@
 
 #include <R4A_Robot.h>          // Robots-For-All robot support
 
+// External libraries
+#include <SparkFun_u-blox_GNSS_v3.h>    //Click here to get the library: http://librarymanager/All#SparkFun_u-blox_GNSS_v3
+
 //****************************************
 // Constants
 //****************************************
@@ -77,6 +80,19 @@ class R4A_I2C_BUS
     // Inputs:
     //   display: Device used for output
     void enumerate(Print * display = &Serial);
+
+    // Get the TwoWire pointer
+    //
+    // Warning: Using the I2C bus outside of these routines will break the
+    // I2C controller synchronization leading to hangs, crashes and unspecified
+    // behavior!
+    //
+    // Outputs:
+    //   Returns the TwoWire object address
+    TwoWire * getTwoWire()
+    {
+        return _i2cBus;
+    }
 
     // Check if an I2C device was seen during the enumeration
     // Inputs:
@@ -884,5 +900,145 @@ public:
 // Returns true if the data byte was successfully written and false otherwise
     bool write(uint8_t data);
 };
+
+//****************************************
+// u-blox ZED F9P class
+//****************************************
+
+class R4A_ZED_F9P
+{
+  private:
+
+    Print * _display;
+    SFE_UBLOX_GNSS _gnss;
+    const uint8_t _i2cAddress;
+    R4A_I2C_BUS * _i2cBus;
+    TwoWire * _twoWire;
+
+  public:
+
+    double _altitude;
+    double * _altitudeArray;
+    int _altitudeCount;
+    int _altitudeCountSave;
+    uint8_t _carrierSolution;
+    volatile bool _computePoint;
+    bool _confirmedDate;
+    bool _confirmedTime;
+    uint8_t _day;
+    uint8_t _fixType;
+    bool _fullyResolved;
+    double _horizontalAccuracy;
+    double * _horizontalAccuracyArray;
+    uint8_t _hour;
+    const uint8_t _i2cTransactionSize;
+    double _latitude;
+    double * _latitudeArray;
+    int _latLongCount;
+    int _latLongCountSave;
+    double _longitude;
+    double * _longitudeArray;
+    uint16_t _millisecond; // Limited to first two digits
+    uint8_t _minute;
+    uint8_t _month;
+    int32_t _nanosecond;
+    bool _online;   // True if ZED F9P successfully initialized
+    uint8_t _satellitesInView;
+    uint8_t _second;
+    uint32_t _tAcc;
+    bool _unitsFeetInches;
+    bool _validDate;
+    bool _validTime;
+    uint16_t _year;
+
+    // Constructor
+    R4A_ZED_F9P(R4A_I2C_BUS * i2cBus, uint8_t i2cAddress)
+        : _altitudeArray{nullptr},
+          _altitudeCount{0},
+          _carrierSolution{0},
+          _computePoint{false},
+          _confirmedDate{false},
+          _confirmedTime{false},
+          _display{nullptr},
+          _fixType{0},
+          _fullyResolved{false},
+          _horizontalAccuracy{0},
+          _horizontalAccuracyArray{nullptr},
+          _i2cAddress{i2cAddress},
+          _i2cBus{i2cBus},
+          _i2cTransactionSize{128},
+          _latitude{0},
+          _latitudeArray{nullptr},
+          _latLongCount{0},
+          _longitude{0},
+          _longitudeArray{nullptr},
+          _online{false},
+          _satellitesInView{0},
+          _twoWire{i2cBus->getTwoWire()},
+          _unitsFeetInches{false},
+          _validDate{false},
+          _validTime{false}
+    {
+    }
+
+    // Destructor
+    ~R4A_ZED_F9P();
+
+    // Initialize the GNSS device
+    bool begin(Print * display = &Serial);
+
+    // Compute the mean and standard deviation
+    double computeMean(double * data,
+                       int entries,
+                       double * standardDeviation);
+
+    // Compute point and display point
+    void computePoint(Print * display);
+
+    // Display the location
+    void displayLocation(Print * display);
+
+    // Display the location
+    void displayLocation(double latitude,
+                         double longitude,
+                         double altitude,
+                         double horizontalAccuracy,
+                         Print * display = &Serial);
+
+    // Poll the GNSS using I2C
+    void i2cPoll();
+
+    // Push the RTCM data to the GNSS using I2C
+    int pushRawData(uint8_t * buffer, int bytes, Print * display);
+
+    // Store horizontal position data
+    void storeHPdata(UBX_NAV_HPPOSLLH_data_t * ubxDataStruct);
+
+    // Store vertical position and time data
+    void storePVTdata(UBX_NAV_PVT_data_t * ubxDataStruct);
+
+    // Process the received NMEA messages
+    void update(uint32_t currentMsec, Print * display = nullptr);
+};
+
+// Parameters
+extern bool r4aZedF9pDisplayAltitude;   // Display the altitude
+extern bool r4aZedF9pDisplayFixType;    // Display the fix type
+extern bool r4aZedF9pDisplayHpaLatLong; // Display the latitude and longitude
+extern bool r4aZedF9pDisplaySiv;        // Display satellites-in-view
+extern bool r4aZedF9pDisplayTime;       // Display time data
+extern uint32_t r4aZedF9pLocationDisplayMsec; // 0 = Off, Interval to display the location
+extern uint32_t r4aZedF9pPollMsec;      // I2C polling interval for the GNSS receiver
+extern bool r4aZedF9pUnitsFeetInches;   // Display in feet and inches .vs. meters
+
+// Store horizontal position data
+// Inputs:
+//   ubxDataStruct: Data structure containing high precision data
+void r4aZedF9pStoreHPdata(UBX_NAV_HPPOSLLH_data_t * ubxDataStruct);
+
+// Store vertical position and time data
+// Inputs:
+//   ubxDataStruct: Data structure containing position, velocity and time
+void r4aZedF9pStorePVTdata(UBX_NAV_PVT_data_t * ubxDataStruct);
 
 #endif  // R4A_USING_ESP32
