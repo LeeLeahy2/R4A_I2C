@@ -154,6 +154,7 @@ bool R4A_I2C_BUS::write(uint8_t deviceI2cAddress,
 
 //*********************************************************************
 // Display the help text with mm and ssss
+[[deprecated("Use r4aMenuHelpSuffix instead.")]]
 void r4aI2cMenuHelpAaRr(const struct _R4A_MENU_ENTRY * menuEntry,
                         const char * align,
                         Print * display)
@@ -164,6 +165,7 @@ void r4aI2cMenuHelpAaRr(const struct _R4A_MENU_ENTRY * menuEntry,
 
 //*********************************************************************
 // Display the help text with mm and ssss
+[[deprecated("Use r4aMenuHelpSuffix instead.")]]
 void r4aI2cMenuHelpAaRrDd(const struct _R4A_MENU_ENTRY * menuEntry,
                           const char * align,
                           Print * display)

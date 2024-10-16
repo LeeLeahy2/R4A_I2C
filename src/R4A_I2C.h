@@ -181,6 +181,7 @@ extern const R4A_MENU_ENTRY r4aI2cMenuTable[]; // I2C menu
 //   menuEntry: Address of the object describing the menu entry
 //   align: Zero terminated string of spaces for alignment
 //   display: Device used for output
+[[deprecated("Use r4aMenuHelpSuffix instead.")]]
 void r4aI2cMenuHelpAaRr(const struct _R4A_MENU_ENTRY * menuEntry,
                         const char * align,
                         Print * display);
@@ -190,6 +191,7 @@ void r4aI2cMenuHelpAaRr(const struct _R4A_MENU_ENTRY * menuEntry,
 //   menuEntry: Address of the object describing the menu entry
 //   align: Zero terminated string of spaces for alignment
 //   display: Device used for output
+[[deprecated("Use r4aMenuHelpSuffix instead.")]]
 void r4aI2cMenuHelpAaRrDd(const struct _R4A_MENU_ENTRY * menuEntry,
                           const char * align,
                           Print * display);
@@ -708,6 +710,7 @@ void r4aPca9685MotorMenuForward(const R4A_MENU_ENTRY * menuEntry,
 //   menuEntry: Address of the object describing the menu entry
 //   align: Zero terminated string of spaces for alignment
 //   display: Device used for output
+[[deprecated("Use r4aMenuHelpSuffix instead.")]]
 void r4aPca9685MotorMenuHelpMm(const struct _R4A_MENU_ENTRY * menuEntry,
                                const char * align,
                                Print * display = &Serial);
@@ -717,6 +720,7 @@ void r4aPca9685MotorMenuHelpMm(const struct _R4A_MENU_ENTRY * menuEntry,
 //   menuEntry: Address of the object describing the menu entry
 //   align: Zero terminated string of spaces for alignment
 //   display: Device used for output
+[[deprecated("Use r4aMenuHelpSuffix instead.")]]
 void r4aPca9685MotorMenuHelpMmSsss(const struct _R4A_MENU_ENTRY * menuEntry,
                                    const char * align,
                                    Print * display = &Serial);
