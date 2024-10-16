@@ -69,10 +69,7 @@ bool r4aPca9685ServoGetDegrees(const R4A_MENU_ENTRY * menuEntry,
     int s;
 
     // Get the parameter name
-    String line = String(&command[strlen(menuEntry->command)]);
-
-    // Strip white space from the beginning of the name
-    line.trim();
+    String line = r4aMenuGetParameters(menuEntry, command);
 
     // Get the servo number
     s = menuEntry->menuParameter;
@@ -106,10 +103,7 @@ bool r4aPca9685ServoGetServoDegrees(const R4A_MENU_ENTRY * menuEntry,
     int s;
 
     // Get the parameter name
-    String line = String(&command[strlen(menuEntry->command)]);
-
-    // Strip white space from the beginning of the name
-    line.trim();
+    String line = r4aMenuGetParameters(menuEntry, command);
 
     // Get the values
     *values = sscanf(line.c_str(), "%d %d", &s, &degs);

@@ -186,10 +186,7 @@ bool r4aI2cMenuGetAddressRegister(const R4A_MENU_ENTRY * menuEntry,
     int r;
 
     // Get the parameter name
-    String line = String(&command[strlen(menuEntry->command)]);
-
-    // Strip white space from the beginning of the name
-    line.trim();
+    String line = r4aMenuGetParameters(menuEntry, command);
 
     // Get the values
     *values = sscanf(line.c_str(), "%02x %02x", &a, &r);
@@ -227,10 +224,7 @@ bool r4aI2cMenuGetAddressRegisterData(const R4A_MENU_ENTRY * menuEntry,
     int w;
 
     // Get the parameter name
-    String line = String(&command[strlen(menuEntry->command)]);
-
-    // Strip white space from the beginning of the name
-    line.trim();
+    String line = r4aMenuGetParameters(menuEntry, command);
 
     // Get the values
     *values = sscanf(line.c_str(), "%2x %2x %2x", &a, &r, &w);
