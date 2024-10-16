@@ -910,6 +910,23 @@ public:
 // u-blox ZED F9P class
 //****************************************
 
+// Routine to process the waypoint
+// Inputs:
+//   parameter: Callback parameter passed to computeWayPoint
+//   latitude: Latitude in degrees
+//   longitude: Longitude in degrees
+//   altitude: Altitude in meters
+//   horizontalAccuracy: Accuracy in meters
+//   satellitesInView: The number of satellites feeding the GNSS receiver
+//   display: Device used for output, passed to computeWayPoint
+typedef void (* R4A_WAYPOINT_ROUTINE)(intptr_t parameter,
+                                      double latitude,
+                                      double longitude,
+                                      double altitude,
+                                      double horizontalAccuracy,
+                                      int satellitesInView,
+                                      Print * display);
+
 class R4A_ZED_F9P
 {
   private:
@@ -919,6 +936,11 @@ class R4A_ZED_F9P
     const uint8_t _i2cAddress;
     R4A_I2C_BUS * _i2cBus;
     TwoWire * _twoWire;
+
+    // Start collecting data for a point
+    // Inputs:
+    //   count: Number of points to average
+    bool collectData(int count);
 
   public:
 
@@ -954,6 +976,8 @@ class R4A_ZED_F9P
     bool _unitsFeetInches;
     bool _validDate;
     bool _validTime;
+    R4A_WAYPOINT_ROUTINE _wayPointRoutine;
+    intptr_t _wayPointParameter;
     uint16_t _year;
 
     // Constructor
@@ -998,7 +1022,21 @@ class R4A_ZED_F9P
                        double * standardDeviation);
 
     // Compute point and display point
-    void computePoint(Print * display);
+    // Inputs:
+    //   count: Number of points to average
+    //   display: Device used for output
+    void computePoint(int count, Print * display);
+
+    // Compute a waypoint
+    // Inputs:
+    //   routine: Callback routine once point is computed
+    //   parameter: Parameter for the callback routine
+    //   count: Number of points to average
+    //   display: Device used for output
+    void computeWayPoint(R4A_WAYPOINT_ROUTINE routine,
+                         intptr_t parameter,
+                         int count,
+                         Print * display);
 
     // Display the location
     void displayLocation(Print * display);

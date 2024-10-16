@@ -151,11 +151,15 @@ double R4A_ZED_F9P::computeMean(double * data,
 }
 
 //*********************************************************************
-// Compute point and display point
-void R4A_ZED_F9P::computePoint(Print * display)
+// Start collecting data for a point
+bool R4A_ZED_F9P::collectData(int count)
 {
+    // Verify that the collection is available
+    if (_latLongCount)
+        return false;
+
     // Get the horizontal position
-    _latLongCount = 50;
+    _latLongCount = count;
     _latLongCountSave = _latLongCount;
     _latitudeArray = (double *)malloc(_latLongCount * sizeof(double));
     _longitudeArray = (double *)malloc(_latLongCount * sizeof(double));
@@ -165,10 +169,39 @@ void R4A_ZED_F9P::computePoint(Print * display)
     _altitudeCount = _latLongCount;
     _altitudeCountSave = _altitudeCount;
     _altitudeArray = (double *)malloc(_altitudeCount * sizeof(double));
+    return true;
+}
 
+//*********************************************************************
+// Compute point and display point
+void R4A_ZED_F9P::computePoint(int count, Print * display)
+{
     // Start collection of the location, display the result when done
-    _display = display;
-    _computePoint = true;
+    if (collectData(count))
+    {
+        _display = display;
+        _computePoint = true;
+    }
+    else if (display);
+        display->printf("ERROR: Data collection is busy!\r\n");
+}
+
+//*********************************************************************
+// Compute a waypoint
+void R4A_ZED_F9P::computeWayPoint(R4A_WAYPOINT_ROUTINE routine,
+                                  intptr_t parameter,
+                                  int count,
+                                  Print * display)
+{
+    // Start collection of the location, display the result when done
+    if (collectData(count))
+    {
+        _wayPointRoutine = routine;
+        _wayPointParameter = parameter;
+        _display = display;
+    }
+    else if (display);
+        display->printf("ERROR: Data collection is busy!\r\n");
 }
 
 //*********************************************************************
@@ -398,7 +431,16 @@ void R4A_ZED_F9P::storePVTdata(UBX_NAV_PVT_data_t * ubxDataStruct)
 // Process the received NMEA messages
 void R4A_ZED_F9P::update(uint32_t currentMsec, Print * display)
 {
+    double altitudeMean;
+    double altitudeStdDev;
+    double horizontalMean;
+    double horizontalStdDev;
     static uint32_t lastLocationDisplayMsec;
+    bool lastPoint;
+    double latitudeMean;
+    double latitudeStdDev;
+    double longitudeMean;
+    double longitudeStdDev;
 
     _gnss.checkCallbacks(); // Check if any callbacks are waiting to be processed.
 
@@ -410,21 +452,12 @@ void R4A_ZED_F9P::update(uint32_t currentMsec, Print * display)
         displayLocation(&Serial);
     }
 
+    // Determine if this is the last point in the array
+    lastPoint = (_computePoint && (!_latLongCount) && (!_altitudeCount));
+
     // Display the current point
-    if (_computePoint && (!_latLongCount) && (!_altitudeCount))
+    if (lastPoint)
     {
-        double latitudeMean;
-        double latitudeStdDev;
-        double longitudeMean;
-        double longitudeStdDev;
-        double horizontalMean;
-        double horizontalStdDev;
-        double altitudeMean;
-        double altitudeStdDev;
-
-        // Stop the data collection
-        _computePoint = false;
-
         // Compute the point
         latitudeMean = computeMean(_latitudeArray,
                                    _latLongCountSave,
@@ -438,6 +471,23 @@ void R4A_ZED_F9P::update(uint32_t currentMsec, Print * display)
         altitudeMean = computeMean(_altitudeArray,
                                    _altitudeCountSave,
                                    &altitudeStdDev);
+
+        // Free the arrays
+        free(_latitudeArray);
+        free(_longitudeArray);
+        free(_horizontalAccuracyArray);
+        free(_altitudeArray);
+        _latitudeArray = nullptr;
+        _longitudeArray = nullptr;
+        _horizontalAccuracyArray = nullptr;
+        _altitudeArray = nullptr;
+    }
+
+    // Display the mean values
+    if (lastPoint && _computePoint)
+    {
+        // Stop the data collection
+        _computePoint = false;
 
         // Display the point
         displayLocation(latitudeMean,
@@ -454,15 +504,5 @@ void R4A_ZED_F9P::update(uint32_t currentMsec, Print * display)
             display->printf("%14.9fm: Horizontal accuracy standard deviation\r\n", horizontalStdDev);
             display->printf("%14.9fm: Altitude standard deviation\r\n", altitudeStdDev);
         }
-
-        // Free the arrays
-        free(_latitudeArray);
-        free(_longitudeArray);
-        free(_horizontalAccuracyArray);
-        free(_altitudeArray);
-        _latitudeArray = nullptr;
-        _longitudeArray = nullptr;
-        _horizontalAccuracyArray = nullptr;
-        _altitudeArray = nullptr;
     }
 }
