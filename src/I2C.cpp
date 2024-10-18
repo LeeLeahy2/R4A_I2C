@@ -68,7 +68,7 @@ void R4A_I2C_BUS::enumerate(Print * display)
         }
 
         // Update the present bit
-        mask = 1 << addr & 3;
+        mask = 1 << (addr & 7);
         if (present)
             _present[addr / 8] |= mask;
         else
@@ -113,7 +113,7 @@ bool R4A_I2C_BUS::isDevicePresent(uint8_t deviceAddress)
 {
     if (!_enumerated)
         enumerate(nullptr);
-    return _present[deviceAddress / 8] & (1 << (deviceAddress & 3));
+    return _present[deviceAddress / 8] & (1 << (deviceAddress & 7));
 }
 
 //*********************************************************************
