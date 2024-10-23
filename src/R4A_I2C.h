@@ -912,46 +912,73 @@ public:
 
 // Parameters
 extern bool r4aZedF9pDisplayAltitude;   // Display the altitude
+extern bool r4aZedF9pDisplayAltitudeStdDev; // Display the altitude standard deviation
 extern bool r4aZedF9pDisplayFixType;    // Display the fix type
 extern bool r4aZedF9pDisplayHorizAcc;   // Display the horizontal accuracy
-extern bool r4aZedF9pDisplayLatLong;    // Display the latitude and longitude
+extern bool r4aZedF9pDisplayHorizAccStdDev; // Display the hroizontal accuracy standard deviation
+extern bool r4aZedF9pDisplayLatitude;   // Display the latitude
+extern bool r4aZedF9pDisplayLatitudeStdDev;  // Display the latitude standard deviation
+extern bool r4aZedF9pDisplayLongitude;  // Display the longitude
+extern bool r4aZedF9pDisplayLongitudeStdDev; // Display the longitude standard deviation
 extern bool r4aZedF9pDisplaySiv;        // Display satellites-in-view
 extern bool r4aZedF9pDisplayTime;       // Display time data
+
 extern uint32_t r4aZedF9pLocationDisplayMsec; // 0 = Off, Interval to display the location
 extern uint32_t r4aZedF9pPollMsec;      // I2C polling interval for the GNSS receiver
 extern bool r4aZedF9pUnitsFeetInches;   // Display in feet and inches .vs. meters
 
-// Routine to process the waypoint
+// Routine to display the computed point
 // Inputs:
-//   parameter: Callback parameter passed to computeWayPoint
+//   parameter: Callback parameter passed to computePoint
+//   comment: Text to display at the start of the line
 //   latitude: Latitude in degrees
+//   latitudeStdDev: Latitude standard deviation in degrees
 //   longitude: Longitude in degrees
+//   longitudeStdDev: Longitude standard deviation in degrees
 //   altitude: Altitude in meters
+//   altitudeStdDev: Altitude standard deviation in meters
 //   horizontalAccuracy: Accuracy in meters
+//   horizontalAccuracyStdDev: Horizontal accuracy standard deviation in meters
 //   satellitesInView: The number of satellites feeding the GNSS receiver
-//   display: Device used for output, passed to computeWayPoint
-typedef void (* R4A_WAYPOINT_ROUTINE)(intptr_t parameter,
-                                      double latitude,
-                                      double longitude,
-                                      double altitude,
-                                      double horizontalAccuracy,
-                                      int satellitesInView,
-                                      Print * display);
+//   display: Device used for output, passed to computePoint
+typedef void (* R4A_DISPLAY_ROUTINE)(intptr_t parameter,
+                                     const char * comment,
+                                     double latitude,
+                                     double latitudeStdDev,
+                                     double longitude,
+                                     double longitudeStdDev,
+                                     double altitude,
+                                     double altitudeStdDev,
+                                     double horizontalAccuracy,
+                                     double horizontalAccuracyStdDev,
+                                     uint8_t satellitesInView,
+                                     Print * display);
 
 class R4A_ZED_F9P
 {
   private:
 
+    double _altitudeMean;
+    double _altitudeStdDev;
+    const char * _comment;
     Print * _display;
     SFE_UBLOX_GNSS _gnss;
+    double _horizontalMean;
+    double _horizontalStdDev;
     const uint8_t _i2cAddress;
     R4A_I2C_BUS * _i2cBus;
+    double _latitudeMean;
+    double _latitudeStdDev;
+    double _longitudeMean;
+    double _longitudeStdDev;
     TwoWire * _twoWire;
 
     // Start collecting data for a point
     // Inputs:
     //   count: Number of points to average
-    bool collectData(int count);
+    //   comment: Text to display at the start of the line
+    //   display: Device used for output
+    bool collectData(int count, const char * comment, Print * display = &Serial);
 
   public:
 
@@ -960,15 +987,17 @@ class R4A_ZED_F9P
     int _altitudeCount;
     int _altitudeCountSave;
     uint8_t _carrierSolution;
-    volatile bool _computePoint;
     bool _confirmedDate;
     bool _confirmedTime;
     uint8_t _day;
+    R4A_DISPLAY_ROUTINE _displayRoutine;
+    intptr_t _displayParameter;
     uint8_t _fixType;
     bool _fullyResolved;
     double _horizontalAccuracy;
     double * _horizontalAccuracyArray;
     uint8_t _hour;
+    volatile bool _hpDataAvailable;
     const uint8_t _i2cTransactionSize;
     double _latitude;
     double * _latitudeArray;
@@ -987,8 +1016,6 @@ class R4A_ZED_F9P
     bool _unitsFeetInches;
     bool _validDate;
     bool _validTime;
-    R4A_WAYPOINT_ROUTINE _wayPointRoutine;
-    intptr_t _wayPointParameter;
     uint16_t _year;
 
     // Constructor
@@ -996,14 +1023,16 @@ class R4A_ZED_F9P
         : _altitudeArray{nullptr},
           _altitudeCount{0},
           _carrierSolution{0},
-          _computePoint{false},
           _confirmedDate{false},
           _confirmedTime{false},
           _display{nullptr},
+          _displayRoutine{nullptr},
+          _displayParameter{0},
           _fixType{0},
           _fullyResolved{false},
           _horizontalAccuracy{0},
           _horizontalAccuracyArray{nullptr},
+          _hpDataAvailable{false},
           _i2cAddress{i2cAddress},
           _i2cBus{i2cBus},
           _i2cTransactionSize{128},
@@ -1028,51 +1057,154 @@ class R4A_ZED_F9P
     bool begin(Print * display = &Serial);
 
     // Compute the mean and standard deviation
+    // Inputs:
+    //   data: Address of an array of data
+    //   entries: Number of entries in the array
+    //   standardDeviation: Address of a location to return the standard
+    //                      deviation value
+    // Outputs:
+    //   Return the mean of the values in the array
     double computeMean(double * data,
                        int entries,
                        double * standardDeviation);
 
-    // Compute point and display point
-    // Inputs:
-    //   count: Number of points to average
-    //   display: Device used for output
-    void computePoint(int count, Print * display);
-
-    // Compute a waypoint
+    // Compute and display a point
     // Inputs:
     //   routine: Callback routine once point is computed
     //   parameter: Parameter for the callback routine
     //   count: Number of points to average
+    //   comment: Text to display at the start of the line
     //   display: Device used for output
-    void computeWayPoint(R4A_WAYPOINT_ROUTINE routine,
-                         intptr_t parameter,
-                         int count,
-                         Print * display);
+    void computePoint(R4A_DISPLAY_ROUTINE routine,
+                      intptr_t parameter,
+                      int count,
+                      const char * comment,
+                      Print * display = &Serial);
 
     // Display the location
-    void displayLocation(Print * display);
+    // Inputs:
+    //   comment: Text to display at the start of the line
+    //   display: Device used for output
+    void displayLocation(const char * comment,
+                         Print * display = &Serial);
 
     // Display the location
-    void displayLocation(double latitude,
+    // Inputs:
+    //   comment: Text to display at the start of the line
+    //   unitsFeetInches: True to display in feet and inches instead of meters
+    //   displayTime: True to display the time
+    //   displaySiv: True to display the satellites-in-view count
+    //   displayLatitude: True to display the latitude
+    //   displayLongitude: True to display the longitude
+    //   displayHorizAcc: True to display the horizontal accuracy
+    //   displayAltitude: True to display the altitude
+    //   displayFixType: True to display the fix type
+    //   display: Device used for output
+    void displayLocation(const char * comment,
+                         bool unitsFeetInches,
+                         bool displayTime,
+                         bool displaySiv,
+                         bool displayLatitude,
+                         bool displayLongitude,
+                         bool displayHorizAcc,
+                         bool displayAltitude,
+                         bool displayFixType,
+                         Print * display = &Serial);
+
+    // Display the location
+    // Inputs:
+    //   comment: Text to display at the start of the line
+    //   latitude: Latitude in degrees
+    //   longitude: Longitude in degrees
+    //   altitude: Altitude in meters
+    //   horizontalAccuracy: Horizontal accuracy in meters
+    //   satellitesInView: The number of satellites feeding the GNSS receiver
+    //   display: Device used for output
+    void displayLocation(const char * comment,
+                         double latitude,
                          double longitude,
                          double altitude,
                          double horizontalAccuracy,
+                         uint8_t satellitesInView,
+                         Print * display = &Serial);
+
+    // Display the location
+    // Inputs:
+    //   comment: Text to display at the start of the line
+    //   latitude: Latitude in degrees
+    //   latitudeStdDev: Latitude standard deviation in degrees
+    //   longitude: Longitude in degrees
+    //   longitudeStdDev: Longitude standard deviation in degrees
+    //   altitude: Altitude in meters
+    //   altitudeStdDev: Altitude standard deviation in meters
+    //   horizontalAccuracy: Horizontal accuracy in meters
+    //   horizontalAccuracyStdDev: Horizontal accuracy standard deviation in meters
+    //   satellitesInView: The number of satellites feeding the GNSS receiver
+    //   unitsFeetInches: True to display in feet and inches instead of meters
+    //   displayTime: True to display the time
+    //   displaySiv: True to display the satellites-in-view count
+    //   displayLatitude: True to display the latitude
+    //   displayLatStdDev: True to display the latitude standard deviation
+    //   displayLongitude: True to display the longitude
+    //   displayLongStdDev: True to display the longitude standard deviation
+    //   displayHorizAcc: True to display the horizontal accuracy
+    //   displayHorizAccStdDev: True to display the horizontal accuracy standard deviation
+    //   displayAltitude: True to display the altitude
+    //   displayAltitudeStdDev: True to display the altitude standard deviation
+    //   displayFixType: True to display the fix type
+    //   display: Device used for output
+    void displayLocation(const char * comment,
+                         double latitude,
+                         double latitudeStdDev,
+                         double longitude,
+                         double longitudeStdDev,
+                         double altitude,
+                         double altitudeStdDev,
+                         double horizontalAccuracy,
+                         double horizontalAccuracyStdDev,
+                         uint8_t satellitesInView,
+                         bool unitsFeetInches,
+                         bool displayTime,
+                         bool displaySiv,
+                         bool displayLatitude,
+                         bool displayLatStdDev,
+                         bool displayLongitude,
+                         bool displayLongStdDev,
+                         bool displayHorizAcc,
+                         bool displayHorizAccStdDev,
+                         bool displayAltitude,
+                         bool displayAltitudeStdDev,
+                         bool displayFixType,
                          Print * display = &Serial);
 
     // Poll the GNSS using I2C
     void i2cPoll();
 
     // Push the RTCM data to the GNSS using I2C
+    // Inputs:
+    //   buffer: Address of data to send to the GNSS receiver
+    //   bytes: Number of bytes to send to the GNSS receiver
+    //   display: Device used for output
     int pushRawData(uint8_t * buffer, int bytes, Print * display);
 
     // Store horizontal position data
+    // Inputs:
+    //   ubxDataStruct: Address of the data structure containing the high
+    //                  precision location data
     void storeHPdata(UBX_NAV_HPPOSLLH_data_t * ubxDataStruct);
 
     // Store vertical position and time data
+    // Inputs:
+    //   ubxDataStruct: Address of the data structure containing the
+    //                  position, velocity and time values
     void storePVTdata(UBX_NAV_PVT_data_t * ubxDataStruct);
 
     // Process the received NMEA messages
-    void update(uint32_t currentMsec, Print * display = nullptr);
+    // Inputs:
+    //   currentMsec: Number of milliseconds since boot
+    //   comment: Text to display at the start of the line
+    //   display: Device used for output
+    void update(uint32_t currentMsec, const char * comment, Print * display = nullptr);
 };
 
 // Store horizontal position data

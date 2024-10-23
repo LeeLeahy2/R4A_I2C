@@ -10,15 +10,21 @@
 // Globals - Parameters
 //****************************************
 
-bool r4aZedF9pDisplayTime;          // Display time data
-bool r4aZedF9pDisplaySiv;           // Display satellites-in-view
-bool r4aZedF9pDisplayLatLong;       // Display the latitude and longitude
-bool r4aZedF9pDisplayHorizAcc;      // Display the horizontal accuracy
-bool r4aZedF9pDisplayAltitude;      // Display the altitude
-bool r4aZedF9pDisplayFixType;       // Display the fix type
+bool r4aZedF9pDisplayAltitude;          // Display the altitude
+bool r4aZedF9pDisplayAltitudeStdDev;    // Display the altitude standard deviation
+bool r4aZedF9pDisplayFixType;           // Display the fix type
+bool r4aZedF9pDisplayHorizAcc;          // Display the horizontal accuracy
+bool r4aZedF9pDisplayHorizAccStdDev;    // Display the horizontal accuracy standard deviation
+bool r4aZedF9pDisplayLatitude;          // Display the latitude
+bool r4aZedF9pDisplayLatitudeStdDev;    // Display the latitude standard deviation
+bool r4aZedF9pDisplayLongitude;         // Display the longitude
+bool r4aZedF9pDisplayLongitudeStdDev;   // Display the longitude standard deviation
+bool r4aZedF9pDisplaySiv;               // Display satellites-in-view
+bool r4aZedF9pDisplayTime;              // Display time data
+
 uint32_t r4aZedF9pLocationDisplayMsec = 1000; // 0 = Off, Interval to display the location
-uint32_t r4aZedF9pPollMsec = 100;   // I2C polling interval for the GNSS receiver
-bool r4aZedF9pUnitsFeetInches;      // Display in feet and inches .vs. meters
+uint32_t r4aZedF9pPollMsec = 100;       // I2C polling interval for the GNSS receiver
+bool r4aZedF9pUnitsFeetInches;          // Display in feet and inches .vs. meters
 
 //*********************************************************************
 // Destructor
@@ -153,11 +159,14 @@ double R4A_ZED_F9P::computeMean(double * data,
 
 //*********************************************************************
 // Start collecting data for a point
-bool R4A_ZED_F9P::collectData(int count)
+bool R4A_ZED_F9P::collectData(int count, const char * comment, Print * display)
 {
     // Verify that the collection is available
     if (_latLongCount)
         return false;
+
+    // Save the comment
+    _comment = comment;
 
     // Get the horizontal position
     _latLongCount = count;
@@ -170,58 +179,158 @@ bool R4A_ZED_F9P::collectData(int count)
     _altitudeCount = _latLongCount;
     _altitudeCountSave = _altitudeCount;
     _altitudeArray = (double *)malloc(_altitudeCount * sizeof(double));
+
+    // Set the display
+    _display = display;
     return true;
 }
 
 //*********************************************************************
-// Compute point and display point
-void R4A_ZED_F9P::computePoint(int count, Print * display)
+// Compute and display a point
+void R4A_ZED_F9P::computePoint(R4A_DISPLAY_ROUTINE routine,
+                               intptr_t parameter,
+                               int count,
+                               const char * comment,
+                               Print * display)
 {
-    // Start collection of the location, display the result when done
-    if (collectData(count))
-    {
-        _display = display;
-        _computePoint = true;
-    }
-    else if (display);
-        display->printf("ERROR: Data collection is busy!\r\n");
-}
+    bool idle;
 
-//*********************************************************************
-// Compute a waypoint
-void R4A_ZED_F9P::computeWayPoint(R4A_WAYPOINT_ROUTINE routine,
-                                  intptr_t parameter,
-                                  int count,
-                                  Print * display)
-{
     // Start collection of the location, display the result when done
-    if (collectData(count))
+    idle = collectData(count, comment, display);
+    if (idle)
     {
-        _wayPointRoutine = routine;
-        _wayPointParameter = parameter;
-        _display = display;
+        _displayRoutine = routine;
+        _displayParameter = parameter;
     }
-    else if (display);
+    else if (display)
         display->printf("ERROR: Data collection is busy!\r\n");
 }
 
 //*********************************************************************
 // Display the location
-void R4A_ZED_F9P::displayLocation(Print * display)
+void R4A_ZED_F9P::displayLocation(const char * comment, Print * display)
 {
-    displayLocation(_latitude,
+    displayLocation(comment,
+                    _latitude,
                     _longitude,
+                    0,
                     _altitude,
+                    0,
                     _horizontalAccuracy,
+                    0,
+                    _satellitesInView,
+                    r4aZedF9pUnitsFeetInches,
+                    r4aZedF9pDisplayTime,
+                    r4aZedF9pDisplaySiv,
+                    r4aZedF9pDisplayLatitude,
+                    false,
+                    r4aZedF9pDisplayLongitude,
+                    false,
+                    r4aZedF9pDisplayHorizAcc,
+                    false,
+                    r4aZedF9pDisplayAltitude,
+                    false,
+                    r4aZedF9pDisplayFixType,
                     display);
 }
 
 //*********************************************************************
 // Display the location
-void R4A_ZED_F9P::displayLocation(double latitude,
+void R4A_ZED_F9P::displayLocation(const char * comment,
+                                  bool unitsFeetInches,
+                                  bool displayTime,
+                                  bool displaySiv,
+                                  bool displayLatitude,
+                                  bool displayLongitude,
+                                  bool displayHorizAcc,
+                                  bool displayAltitude,
+                                  bool displayFixType,
+                                  Print * display)
+{
+    displayLocation(comment,
+                    _latitude,
+                    0,
+                    _longitude,
+                    0,
+                    _altitude,
+                    0,
+                    _horizontalAccuracy,
+                    0,
+                    _satellitesInView,
+                    unitsFeetInches,
+                    displayTime,
+                    displaySiv,
+                    displayLatitude,
+                    false,
+                    displayLongitude,
+                    false,
+                    displayHorizAcc,
+                    false,
+                    displayAltitude,
+                    false,
+                    displayFixType,
+                    display);
+}
+
+//*********************************************************************
+// Display the location
+void R4A_ZED_F9P::displayLocation(const char * comment,
+                                  double latitude,
                                   double longitude,
                                   double altitude,
                                   double horizontalAccuracy,
+                                  uint8_t satellitesInView,
+                                  Print * display)
+{
+    displayLocation(comment,
+                    latitude,
+                    0,
+                    longitude,
+                    0,
+                    altitude,
+                    0,
+                    horizontalAccuracy,
+                    0,
+                    satellitesInView,
+                    r4aZedF9pUnitsFeetInches,
+                    r4aZedF9pDisplayTime,
+                    r4aZedF9pDisplaySiv,
+                    r4aZedF9pDisplayLatitude,
+                    false,
+                    r4aZedF9pDisplayLongitude,
+                    false,
+                    r4aZedF9pDisplayHorizAcc,
+                    false,
+                    r4aZedF9pDisplayAltitude,
+                    false,
+                    r4aZedF9pDisplayFixType,
+                    display);
+}
+
+//*********************************************************************
+// Display the location
+void R4A_ZED_F9P::displayLocation(const char * comment,
+                                  double latitude,
+                                  double latitudeStdDev,
+                                  double longitude,
+                                  double longitudeStdDev,
+                                  double altitude,
+                                  double altitudeStdDev,
+                                  double horizontalAccuracy,
+                                  double horizontalAccuracyStdDev,
+                                  uint8_t satellitesInView,
+                                  bool unitsFeetInches,
+                                  bool displayTime,
+                                  bool displaySiv,
+                                  bool displayLatitude,
+                                  bool displayLatStdDev,
+                                  bool displayLongitude,
+                                  bool displayLongStdDev,
+                                  bool displayHorizAcc,
+                                  bool displayHorizAccStdDev,
+                                  bool displayAltitude,
+                                  bool displayAltitudeStdDev,
+                                  bool displayFixType,
                                   Print * display)
 {
     const char * altitudeUnits;
@@ -245,7 +354,7 @@ void R4A_ZED_F9P::displayLocation(double latitude,
     tzHours = (correction + 24) % 24;
     altitudeUnits = "m";
     hpaUnits = 'm';
-    if (r4aZedF9pUnitsFeetInches)
+    if (unitsFeetInches)
     {
         // Convert the altitude
         altitude = altitude * (double)1000. / R4A_MILLIMETERS_PER_FOOT;
@@ -263,26 +372,31 @@ void R4A_ZED_F9P::displayLocation(double latitude,
     // Build the string
     buffer[0] = 0;
 
+    // Add the comment
+    length = strlen(buffer);
+    if (comment)
+        sprintf(&buffer[length], "%s", comment);
+
     // Display the string
     length = strlen(buffer);
-    if (r4aZedF9pDisplayTime)
+    if (displayTime)
         sprintf(&buffer[length], "%2d:%02d:%02d", tzHours, tzMinutes, tzSeconds);
 
     // Display satellites-in-view (SIV)
     length = strlen(buffer);
-    if (r4aZedF9pDisplaySiv)
+    if (displaySiv)
     {
         if (length)
         {
             strcat(buffer, "  ");
             length += 2;
         }
-        sprintf(&buffer[length], "SIV: %2d", _satellitesInView);
+        sprintf(&buffer[length], "SIV: %2d", satellitesInView);
     }
 
     // Display the horizontal accuracy
     length = strlen(buffer);
-    if (r4aZedF9pDisplayHorizAcc)
+    if (displayHorizAcc)
     {
         if (length)
         {
@@ -292,22 +406,70 @@ void R4A_ZED_F9P::displayLocation(double latitude,
         sprintf(&buffer[length], "HPA: %.3f%c", horizontalAccuracy, hpaUnits);
     }
 
-    // Display the location
+    // Display the horizontal accuracy standard deviation
     length = strlen(buffer);
-    if (r4aZedF9pDisplayLatLong)
+    if (displayHorizAccStdDev)
     {
         if (length)
         {
             strcat(buffer, "  ");
             length += 2;
         }
-        sprintf(&buffer[length], "Lat: %14.9f, Long: %14.9f",
-                        _latitude, _longitude);
+        sprintf(&buffer[length], "Std Dev: %14.9f", horizontalAccuracyStdDev);
+    }
+
+
+    // Display the latitude
+    length = strlen(buffer);
+    if (displayLatitude)
+    {
+        if (length)
+        {
+            strcat(buffer, "  ");
+            length += 2;
+        }
+        sprintf(&buffer[length], "Lat: %14.9f", latitude);
+    }
+
+    // Display the latitude standard deviation
+    length = strlen(buffer);
+    if (displayLatStdDev)
+    {
+        if (length)
+        {
+            strcat(buffer, "  ");
+            length += 2;
+        }
+        sprintf(&buffer[length], "Std Dev: %14.9f", latitudeStdDev);
+    }
+
+    // Display the longitude
+    length = strlen(buffer);
+    if (displayLongitude)
+    {
+        if (length)
+        {
+            strcat(buffer, "  ");
+            length += 2;
+        }
+        sprintf(&buffer[length], "Long: %14.9f", longitude);
+    }
+
+    // Display the longitude standard deviation
+    length = strlen(buffer);
+    if (displayLongStdDev)
+    {
+        if (length)
+        {
+            strcat(buffer, "  ");
+            length += 2;
+        }
+        sprintf(&buffer[length], "Std Dev: %14.9f", longitudeStdDev);
     }
 
     // Display the altitude
     length = strlen(buffer);
-    if (r4aZedF9pDisplayAltitude)
+    if (displayAltitude)
     {
         if (length)
         {
@@ -317,9 +479,21 @@ void R4A_ZED_F9P::displayLocation(double latitude,
         sprintf(&buffer[length], "Alt: %9.3f%s", altitude, altitudeUnits);
     }
 
+    // Display the altitude standard deviation
+    length = strlen(buffer);
+    if (displayAltitudeStdDev)
+    {
+        if (length)
+        {
+            strcat(buffer, "  ");
+            length += 2;
+        }
+        sprintf(&buffer[length], "Std Dev: %14.9f", longitudeStdDev);
+    }
+
     // Display the fix type
     length = strlen(buffer);
-    if (r4aZedF9pDisplayFixType)
+    if (displayFixType)
     {
         if (length)
         {
@@ -332,7 +506,7 @@ void R4A_ZED_F9P::displayLocation(double latitude,
 
     // Display the GPS data
     length = strlen(buffer);
-    if (length)
+    if (length && display)
         display->printf("%s\r\n", buffer);
 }
 
@@ -388,7 +562,7 @@ void R4A_ZED_F9P::storeHPdata(UBX_NAV_HPPOSLLH_data_t * ubxDataStruct)
     _longitude += ((double)ubxDataStruct->lonHp) / (double)1.e9;
 
     // Compute the point location
-    if (_computePoint && _latLongCount)
+    if (_latLongCount)
     {
         // Set the array index
         _latLongCount -= 1;
@@ -397,7 +571,30 @@ void R4A_ZED_F9P::storeHPdata(UBX_NAV_HPPOSLLH_data_t * ubxDataStruct)
         _latitudeArray[_latLongCount] = _latitude;
         _longitudeArray[_latLongCount] = _longitude;
         _horizontalAccuracyArray[_latLongCount] = _horizontalAccuracy;
+
+        // Compute the point when the data collection is done
+        if (_latLongCount == 0)
+        {
+            _latitudeMean = computeMean(_latitudeArray,
+                                        _latLongCountSave,
+                                        &_latitudeStdDev);
+            _longitudeMean = computeMean(_longitudeArray,
+                                         _latLongCountSave,
+                                         &_longitudeStdDev);
+            _horizontalMean = computeMean(_horizontalAccuracyArray,
+                                          _latLongCountSave,
+                                          &_horizontalStdDev);
+
+            // Free the arrays
+            free(_latitudeArray);
+            free(_longitudeArray);
+            free(_horizontalAccuracyArray);
+            _latitudeArray = nullptr;
+            _longitudeArray = nullptr;
+            _horizontalAccuracyArray = nullptr;
+        }
     }
+    _hpDataAvailable = true;
 }
 
 //*********************************************************************
@@ -429,92 +626,72 @@ void R4A_ZED_F9P::storePVTdata(UBX_NAV_PVT_data_t * ubxDataStruct)
     _tAcc = ubxDataStruct->tAcc; // Nanoseconds
 
     // Compute the point location
-    if (_computePoint && _altitudeCount)
+    if (_altitudeCount)
     {
         // Set the array index
         _altitudeCount -= 1;
 
         // Save the value
         _altitudeArray[_altitudeCount] = _altitude;
+
+        // Compute the point when the data collection is done
+        if (_altitudeCount == 0)
+        {
+            _altitudeMean = computeMean(_altitudeArray,
+                                        _altitudeCountSave,
+                                        &_altitudeStdDev);
+
+            // Free the array
+            free(_altitudeArray);
+            _altitudeArray = nullptr;
+        }
     }
 }
 
 //*********************************************************************
 // Process the received NMEA messages
-void R4A_ZED_F9P::update(uint32_t currentMsec, Print * display)
+void R4A_ZED_F9P::update(uint32_t currentMsec, const char * comment, Print * display)
 {
-    double altitudeMean;
-    double altitudeStdDev;
-    double horizontalMean;
-    double horizontalStdDev;
     static uint32_t lastLocationDisplayMsec;
     bool lastPoint;
-    double latitudeMean;
-    double latitudeStdDev;
-    double longitudeMean;
-    double longitudeStdDev;
 
     _gnss.checkCallbacks(); // Check if any callbacks are waiting to be processed.
 
     // Display the current location
-    if (r4aZedF9pLocationDisplayMsec
-        && ((currentMsec - lastLocationDisplayMsec) > r4aZedF9pLocationDisplayMsec))
+    if (r4aZedF9pLocationDisplayMsec && _hpDataAvailable
+        && ((currentMsec - lastLocationDisplayMsec) >= r4aZedF9pLocationDisplayMsec))
     {
         lastLocationDisplayMsec = currentMsec;
-        displayLocation(&Serial);
+        displayLocation(comment, &Serial);
+        _hpDataAvailable = false;
     }
 
     // Determine if this is the last point in the array
-    lastPoint = (_computePoint && (!_latLongCount) && (!_altitudeCount));
+    lastPoint = (!_latLongCount) && (!_altitudeCount);
+    if (!lastPoint)
+        return;
 
-    // Display the current point
-    if (lastPoint)
+    // Display the computed point
+    if (_displayRoutine)
     {
-        // Compute the point
-        latitudeMean = computeMean(_latitudeArray,
-                                   _latLongCountSave,
-                                   &latitudeStdDev);
-        longitudeMean = computeMean(_longitudeArray,
-                                    _latLongCountSave,
-                                    &longitudeStdDev);
-        horizontalMean = computeMean(_horizontalAccuracyArray,
-                                     _latLongCountSave,
-                                     &horizontalStdDev);
-        altitudeMean = computeMean(_altitudeArray,
-                                   _altitudeCountSave,
-                                   &altitudeStdDev);
+        // Display the computed point
+        _displayRoutine(_displayParameter,
+                        _comment,
+                        _latitudeMean,
+                        _latitudeStdDev,
+                        _longitudeMean,
+                        _longitudeStdDev,
+                        _altitudeMean,
+                        _altitudeStdDev,
+                        _horizontalMean,
+                        _horizontalStdDev,
+                        _satellitesInView,
+                        _display);
 
-        // Free the arrays
-        free(_latitudeArray);
-        free(_longitudeArray);
-        free(_horizontalAccuracyArray);
-        free(_altitudeArray);
-        _latitudeArray = nullptr;
-        _longitudeArray = nullptr;
-        _horizontalAccuracyArray = nullptr;
-        _altitudeArray = nullptr;
-    }
-
-    // Display the mean values
-    if (lastPoint && _computePoint)
-    {
         // Stop the data collection
-        _computePoint = false;
-
-        // Display the point
-        displayLocation(latitudeMean,
-                        longitudeMean,
-                        altitudeMean,
-                        horizontalMean,
-                        display);
-
-        // Display the accuracy
-        if (display)
-        {
-            display->printf("%14.9fm: Latitude standard deviation\r\n", latitudeStdDev);
-            display->printf("%14.9fm: Longitude standard deviation\r\n", longitudeStdDev);
-            display->printf("%14.9fm: Horizontal accuracy standard deviation\r\n", horizontalStdDev);
-            display->printf("%14.9fm: Altitude standard deviation\r\n", altitudeStdDev);
-        }
+        _displayParameter = 0;
+        _displayRoutine = nullptr;
+        _comment = nullptr;
+        _display = nullptr;
     }
 }
