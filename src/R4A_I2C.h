@@ -910,6 +910,17 @@ public:
 // u-blox ZED F9P class
 //****************************************
 
+// Parameters
+extern bool r4aZedF9pDisplayAltitude;   // Display the altitude
+extern bool r4aZedF9pDisplayFixType;    // Display the fix type
+extern bool r4aZedF9pDisplayHorizAcc;   // Display the horizontal accuracy
+extern bool r4aZedF9pDisplayLatLong;    // Display the latitude and longitude
+extern bool r4aZedF9pDisplaySiv;        // Display satellites-in-view
+extern bool r4aZedF9pDisplayTime;       // Display time data
+extern uint32_t r4aZedF9pLocationDisplayMsec; // 0 = Off, Interval to display the location
+extern uint32_t r4aZedF9pPollMsec;      // I2C polling interval for the GNSS receiver
+extern bool r4aZedF9pUnitsFeetInches;   // Display in feet and inches .vs. meters
+
 // Routine to process the waypoint
 // Inputs:
 //   parameter: Callback parameter passed to computeWayPoint
@@ -1063,16 +1074,6 @@ class R4A_ZED_F9P
     // Process the received NMEA messages
     void update(uint32_t currentMsec, Print * display = nullptr);
 };
-
-// Parameters
-extern bool r4aZedF9pDisplayAltitude;   // Display the altitude
-extern bool r4aZedF9pDisplayFixType;    // Display the fix type
-extern bool r4aZedF9pDisplayHpaLatLong; // Display the latitude and longitude
-extern bool r4aZedF9pDisplaySiv;        // Display satellites-in-view
-extern bool r4aZedF9pDisplayTime;       // Display time data
-extern uint32_t r4aZedF9pLocationDisplayMsec; // 0 = Off, Interval to display the location
-extern uint32_t r4aZedF9pPollMsec;      // I2C polling interval for the GNSS receiver
-extern bool r4aZedF9pUnitsFeetInches;   // Display in feet and inches .vs. meters
 
 // Store horizontal position data
 // Inputs:

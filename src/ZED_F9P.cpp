@@ -12,7 +12,8 @@
 
 bool r4aZedF9pDisplayTime;          // Display time data
 bool r4aZedF9pDisplaySiv;           // Display satellites-in-view
-bool r4aZedF9pDisplayHpaLatLong;    // Display the latitude and longitude
+bool r4aZedF9pDisplayLatLong;       // Display the latitude and longitude
+bool r4aZedF9pDisplayHorizAcc;      // Display the horizontal accuracy
 bool r4aZedF9pDisplayAltitude;      // Display the altitude
 bool r4aZedF9pDisplayFixType;       // Display the fix type
 uint32_t r4aZedF9pLocationDisplayMsec = 1000; // 0 = Off, Interval to display the location
@@ -279,17 +280,28 @@ void R4A_ZED_F9P::displayLocation(double latitude,
         sprintf(&buffer[length], "SIV: %2d", _satellitesInView);
     }
 
-    // Display the location
+    // Display the horizontal accuracy
     length = strlen(buffer);
-    if (r4aZedF9pDisplayHpaLatLong)
+    if (r4aZedF9pDisplayHorizAcc)
     {
         if (length)
         {
             strcat(buffer, "  ");
             length += 2;
         }
-        sprintf(&buffer[length], "HPA: %.3f%c, Lat: %14.9f, Long: %14.9f",
-                        horizontalAccuracy, hpaUnits,
+        sprintf(&buffer[length], "HPA: %.3f%c", horizontalAccuracy, hpaUnits);
+    }
+
+    // Display the location
+    length = strlen(buffer);
+    if (r4aZedF9pDisplayLatLong)
+    {
+        if (length)
+        {
+            strcat(buffer, "  ");
+            length += 2;
+        }
+        sprintf(&buffer[length], "Lat: %14.9f, Long: %14.9f",
                         _latitude, _longitude);
     }
 
