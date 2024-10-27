@@ -1217,4 +1217,6 @@ void r4aZedF9pStoreHPdata(UBX_NAV_HPPOSLLH_data_t * ubxDataStruct);
 //   ubxDataStruct: Data structure containing position, velocity and time
 void r4aZedF9pStorePVTdata(UBX_NAV_PVT_data_t * ubxDataStruct);
 
+extern R4A_ZED_F9P * r4aZedF9p;
+
 #endif  // R4A_USING_ESP32

@@ -26,6 +26,8 @@ uint32_t r4aZedF9pLocationDisplayMsec = 1000; // 0 = Off, Interval to display th
 uint32_t r4aZedF9pPollMsec = 100;       // I2C polling interval for the GNSS receiver
 bool r4aZedF9pUnitsFeetInches;          // Display in feet and inches .vs. meters
 
+R4A_ZED_F9P * r4aZedF9p;
+
 //*********************************************************************
 // Destructor
 R4A_ZED_F9P::~R4A_ZED_F9P()
@@ -59,6 +61,9 @@ bool R4A_ZED_F9P::begin(Print * display)
 {
     int index;
     int retryCount;
+
+    // Save the object address
+    r4aZedF9p = this;
 
     // Attempt to initialize the GNSS receiver
     _online = false;
