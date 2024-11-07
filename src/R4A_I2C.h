@@ -37,8 +37,8 @@ const uint8_t R4A_I2C_SWRST = 0x06;
 // I2C device description
 typedef struct _R4A_I2C_DEVICE_DESCRIPTION
 {
-    uint8_t deviceAddress;  // I2C device address: 0 - 0x7f
-    char * displayName;     // Name to display when the device is found
+    uint8_t deviceAddress;      // I2C device address: 0 - 0x7f
+    const char * displayName;   // Name to display when the device is found
 } R4A_I2C_DEVICE_DESCRIPTION;
 
 class R4A_I2C_BUS;
