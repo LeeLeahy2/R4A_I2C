@@ -217,6 +217,7 @@ void R4A_ZED_F9P::displayLocation(const char * comment, Print * display)
 {
     displayLocation(comment,
                     _latitude,
+                    0,
                     _longitude,
                     0,
                     _altitude,
