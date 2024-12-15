@@ -596,7 +596,7 @@ bool R4A_PCA9685::setMinMaxDegrees(uint8_t channel,
     }
 
     // Validate the minimum
-    if ((minimum < 0) || (minimum >= 180))
+    if (minimum >= 180)
     {
         if (display)
             display->println("ERROR: Invalid minimum value, valid range (0 - 4096)!\r\n");
@@ -604,7 +604,7 @@ bool R4A_PCA9685::setMinMaxDegrees(uint8_t channel,
     }
 
     // Validate the maximum
-    if ((maximum < 0) || (maximum >= 180))
+    if (maximum >= 180)
     {
         if (display)
             display->println("ERROR: Invalid maximum value, valid range (0 - 4096)!\r\n");
@@ -635,7 +635,6 @@ bool R4A_PCA9685::servoPosition(uint8_t channel,
 // Returns true if successful, false otherwise
 bool R4A_PCA9685::writeBufferedRegisters(Print * display)
 {
-    uint32_t bitMask;
     int channel;
     int channelCount;
     int firstChannel;

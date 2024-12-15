@@ -68,8 +68,9 @@ class R4A_I2C_BUS
     R4A_I2C_BUS(const R4A_I2C_DEVICE_DESCRIPTION * deviceTable,
                 int deviceTableEntries)
         : _deviceTable{deviceTable}, _deviceTableEntries{deviceTableEntries},
-          _i2cBus{nullptr}, _lock{0}, _present{memset(_present, 0, sizeof(_present);}
+          _i2cBus{nullptr}, _lock{0}
     {
+        memset(_present, 0, sizeof(_present));
         r4aI2cBus = this;
     }
 
@@ -275,11 +276,12 @@ public:
                 uint32_t scanClockHertz,
                 uint32_t externalClockHertz = 25 * 1000 * 1000)
         : _channelModified{0},
-          _channelRegs{memset(_channelRegs, 0, sizeof(_channelRegs));},
           _clockHz{scanClockHertz}, _externalClockHz{externalClockHertz},
-          _i2cBus{i2cBus}, _i2cAddress{i2cAddress},
-          _max{memset(_max, 0, sizeof(_max));}, _min{memset(_min, 0, sizeof(_min));}
+          _i2cBus{i2cBus}, _i2cAddress{i2cAddress}
     {
+        memset(_channelRegs, 0, sizeof(_channelRegs));
+        memset(_max, 0, sizeof(_max));
+        memset(_min, 0, sizeof(_min));
     }
 
     // Destructor
@@ -1027,7 +1029,7 @@ class R4A_ZED_F9P
         : _altitude{0},
           _altitudeArray{nullptr},
           _altitudeCount{0},
-          _altitudeCountSave{0}
+          _altitudeCountSave{0},
           _altitudeMean{0},
           _altitudeStdDev{0},
           _carrierSolution{0},
@@ -1053,7 +1055,7 @@ class R4A_ZED_F9P
           _latitude{0},
           _latitudeArray{nullptr},
           _latLongCount{0},
-          _latLongCountSave{0}
+          _latLongCountSave{0},
           _latitudeMean{0},
           _latitudeStdDev{0},
           _longitude{0},

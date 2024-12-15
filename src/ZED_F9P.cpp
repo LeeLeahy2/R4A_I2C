@@ -60,7 +60,6 @@ R4A_ZED_F9P::~R4A_ZED_F9P()
 bool R4A_ZED_F9P::begin(Print * display)
 {
     int index;
-    int retryCount;
 
     // Save the object address
     r4aZedF9p = this;

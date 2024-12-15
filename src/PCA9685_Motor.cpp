@@ -85,7 +85,7 @@ void R4A_PCA9685_MOTOR::display(Print * display)
             {
                 percentageX1000 = plusOnOff[1] ? plusOnOff[1] : plusOnOff[0];
                 percentageX1000 = (100 * 1000 * percentageX1000) >> 12;
-                display->printf("Braking applied %d, %3d.%03d %%\r\n",
+                display->printf("Braking applied %d, %3ld.%03ld %%\r\n",
                                 plusOnOff[1],
                                 percentageX1000 / 1000, percentageX1000 % 1000);
             }
@@ -95,7 +95,7 @@ void R4A_PCA9685_MOTOR::display(Print * display)
             {
                 percentageX1000 = plusOnOff[1] ? plusOnOff[1] : plusOnOff[0];
                 percentageX1000 = (100 * 1000 * percentageX1000) >> 12;
-                display->printf("Forward speed %d, %3d.%03d %%\r\n",
+                display->printf("Forward speed %d, %3ld.%03ld %%\r\n",
                                 plusOnOff[1],
                                 percentageX1000 / 1000, percentageX1000 % 1000);
             }
@@ -105,7 +105,7 @@ void R4A_PCA9685_MOTOR::display(Print * display)
             {
                 percentageX1000 = minusOnOff[1] ? minusOnOff[1] : minusOnOff[0];
                 percentageX1000 = (100 * 1000 * percentageX1000) >> 12;
-                display->printf("Reverse speed %d, %3d.%03d %%\r\n",
+                display->printf("Reverse speed %d, %3ld.%03ld %%\r\n",
                                 minusOnOff[1],
                                 percentageX1000 / 1000, percentageX1000 % 1000);
             }
@@ -367,7 +367,7 @@ bool r4aPca9685MotorMenuGetMotor(const R4A_MENU_ENTRY * menuEntry,
     // Determine if the value is within range
     if ((*values == 1)
         && (m >= 0)
-        && (m < r4aPca9685MotorTableEntries));
+        && (m < r4aPca9685MotorTableEntries))
     {
         *motor = m;
         return true;
@@ -425,7 +425,7 @@ void r4aPca9685MotorMenuBrake(const R4A_MENU_ENTRY * menuEntry,
         display->printf("Please specify a motor (0 - %d) for mm\r\n", r4aPca9685MotorTableEntries - 1);
     else if (values == 1)
         display->printf("Please specify a speed (0 - %d) for ssss\r\n", R4A_PCA9685_MOTOR_SPEED_MAX);
-    else if ((motor < 0) || (motor > r4aPca9685MotorTableEntries))
+    else if (motor > r4aPca9685MotorTableEntries)
         display->printf("Invalid motor value, use (0 - %d)!\r\n", r4aPca9685MotorTableEntries - 1);
     else
         display->printf("Invalid speed value, use (0 - %d)!\r\n", R4A_PCA9685_MOTOR_SPEED_MAX);
@@ -475,7 +475,7 @@ void r4aPca9685MotorMenuForward(const R4A_MENU_ENTRY * menuEntry,
         display->printf("Please specify a motor (0 - %d) for mm\r\n", r4aPca9685MotorTableEntries - 1);
     else if (values == 1)
         display->printf("Please specify a speed (0 - %d) for ssss\r\n", R4A_PCA9685_MOTOR_SPEED_MAX);
-    else if ((motor < 0) || (motor > r4aPca9685MotorTableEntries))
+    else if (motor > r4aPca9685MotorTableEntries)
         display->printf("Invalid motor value, use (0 - %d)!\r\n", r4aPca9685MotorTableEntries - 1);
     else
         display->printf("Invalid speed value, use (0 - %d)!\r\n", R4A_PCA9685_MOTOR_SPEED_MAX);
@@ -498,7 +498,7 @@ void r4aPca9685MotorMenuReverse(const R4A_MENU_ENTRY * menuEntry,
         display->printf("Please specify a motor (0 - %d) for mm\r\n", r4aPca9685MotorTableEntries - 1);
     else if (values == 1)
         display->printf("Please specify a speed (0 - %d) for ssss\r\n", R4A_PCA9685_MOTOR_SPEED_MAX);
-    else if ((motor < 0) || (motor > r4aPca9685MotorTableEntries))
+    else if (motor > r4aPca9685MotorTableEntries)
         display->printf("Invalid motor value, use (0 - %d)!\r\n", r4aPca9685MotorTableEntries - 1);
     else
         display->printf("Invalid speed value, use (0 - %d)!\r\n", R4A_PCA9685_MOTOR_SPEED_MAX);
