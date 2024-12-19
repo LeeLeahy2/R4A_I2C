@@ -29,6 +29,61 @@ bool r4aZedF9pUnitsFeetInches;          // Display in feet and inches .vs. meter
 R4A_ZED_F9P * r4aZedF9p;
 
 //*********************************************************************
+// Constructor
+R4A_ZED_F9P::R4A_ZED_F9P(R4A_I2C_BUS * i2cBus, uint8_t i2cAddress)
+    : _altitude{0},
+      _altitudeArray{nullptr},
+      _altitudeCount{0},
+      _altitudeCountSave{0},
+      _altitudeMean{0},
+      _altitudeStdDev{0},
+      _carrierSolution{0},
+      _comment{nullptr},
+      _confirmedDate{false},
+      _confirmedTime{false},
+      _day{0},
+      _display{nullptr},
+      _displayRoutine{nullptr},
+      _displayParameter{0},
+      _fixType{0},
+      _fullyResolved{false},
+      _gnss{SFE_UBLOX_GNSS()},
+      _horizontalAccuracy{0},
+      _horizontalAccuracyArray{nullptr},
+      _horizontalMean{0},
+      _horizontalStdDev{0},
+      _hour{0},
+      _hpDataAvailable{false},
+      _i2cAddress{i2cAddress},
+      _i2cBus{i2cBus},
+      _i2cTransactionSize{128},
+      _latitude{0},
+      _latitudeArray{nullptr},
+      _latLongCount{0},
+      _latLongCountSave{0},
+      _latitudeMean{0},
+      _latitudeStdDev{0},
+      _longitude{0},
+      _longitudeArray{nullptr},
+      _longitudeMean{0},
+      _longitudeStdDev{0},
+      _millisecond{0},
+      _minute{0},
+      _month{0},
+      _nanosecond{0},
+      _online{false},
+      _satellitesInView{0},
+      _second{0},
+      _tAcc{0},
+      _twoWire{i2cBus->getTwoWire()},
+      _unitsFeetInches{false},
+      _validDate{false},
+      _validTime{false},
+      _year{0}
+{
+}
+
+//*********************************************************************
 // Destructor
 R4A_ZED_F9P::~R4A_ZED_F9P()
 {

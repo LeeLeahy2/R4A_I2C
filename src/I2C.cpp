@@ -14,6 +14,27 @@
 R4A_I2C_BUS * r4aI2cBus;
 
 //*********************************************************************
+// Create the R4A_I2C object
+// Inputs:
+//   deviceTable: Address of the table containing the address and device
+//                descriptions, may be nullptr
+//   deviceTableEntries: Number of entries in the I2C device table
+R4A_I2C_BUS::R4A_I2C_BUS(const R4A_I2C_DEVICE_DESCRIPTION * deviceTable,
+                         int deviceTableEntries)
+    : _deviceTable{deviceTable}, _deviceTableEntries{deviceTableEntries},
+      _i2cBus{nullptr}, _lock{0}
+{
+    memset(_present, 0, sizeof(_present));
+    r4aI2cBus = this;
+}
+
+//*********************************************************************
+// Delete the object
+R4A_I2C_BUS::~R4A_I2C_BUS()
+{
+}
+
+//*********************************************************************
 // Enumerate the I2C bus
 void R4A_I2C_BUS::enumerate(Print * display)
 {
@@ -104,6 +125,20 @@ bool R4A_I2C_BUS::enumerateDevice(uint8_t deviceAddress)
     if (status == 0)
         return true;
     return false;
+}
+
+//*********************************************************************
+// Get the TwoWire pointer
+//
+// Warning: Using the I2C bus outside of these routines will break the
+// I2C controller synchronization leading to hangs, crashes and unspecified
+// behavior!
+//
+// Outputs:
+//   Returns the TwoWire object address
+TwoWire * R4A_I2C_BUS::getTwoWire()
+{
+    return _i2cBus;
 }
 
 //*********************************************************************

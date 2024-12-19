@@ -8,6 +8,32 @@
 #include "R4A_I2C.h"
 
 //*********************************************************************
+// Constructor
+// Inputs:
+//   R4A_PCA9685 * pca9685: Address of the R4A_PCA9684 object
+//   channel: Channel controlling the servo
+//   minimum: Stop point for the servo specified in degrees, range (0 - 180)
+//   maximum: Stop point for the servo specified in degrees, range (0 - 180)
+R4A_PCA9685_SERVO::R4A_PCA9685_SERVO(R4A_PCA9685 * pca9685,
+                                     uint8_t channel,
+                                     uint8_t minimum,
+                                     uint8_t maximum)
+    : _pca9685{pca9685},
+      _channel{channel},
+      _maximum{maximum},
+      _minimum{minimum}
+{
+    // Set the maximum and minimum for the servo
+    _pca9685->setMinMaxDegrees(_channel, minimum, maximum);
+}
+
+//*********************************************************************
+// Destructor
+R4A_PCA9685_SERVO::~R4A_PCA9685_SERVO()
+{
+}
+
+//*********************************************************************
 // Get the position of the servo
 // Returns the position of the servo
 uint8_t R4A_PCA9685_SERVO::positionGet(Print * display)

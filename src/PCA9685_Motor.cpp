@@ -31,6 +31,41 @@
 uint8_t motorLowestChannel;
 
 //*********************************************************************
+// Constructor
+// Inputs:
+//   R4A_PCA9685 * pca9685: Address of the R4A_PCA9684 object
+//   channel: Channel controlling the motor
+R4A_PCA9685_MOTOR::R4A_PCA9685_MOTOR(R4A_PCA9685 * pca9685, uint8_t channel)
+    : _dualChannel{false},
+      _minusChannel{0},
+      _pca9685{pca9685},
+      _plusChannel{channel}
+{
+}
+
+//*********************************************************************
+// Constructor
+// Inputs:
+//   R4A_PCA9685 * pca9685: Address of the R4A_PCA9684 object
+//   plusChannel: Channel that is positive during forward speeds
+//   minusChannel: Channel that is grounded during forward speeds
+R4A_PCA9685_MOTOR::R4A_PCA9685_MOTOR(R4A_PCA9685 * pca9685,
+                                     uint8_t plusChannel,
+                                     uint8_t minusChannel)
+    : _pca9685{pca9685},
+      _dualChannel{true},
+      _plusChannel{plusChannel},
+      _minusChannel{minusChannel}
+{
+}
+
+//*********************************************************************
+// Destructor
+R4A_PCA9685_MOTOR::~R4A_PCA9685_MOTOR()
+{
+}
+
+//*********************************************************************
 // Brake the motor, apply plus to both channels.  When the brakes are
 // not applied, the motor is coasting.
 // Returns true if successful, false otherwise.  Always returns false for

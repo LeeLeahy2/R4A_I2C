@@ -66,18 +66,10 @@ class R4A_I2C_BUS
     //                descriptions, may be nullptr
     //   deviceTableEntries: Number of entries in the I2C device table
     R4A_I2C_BUS(const R4A_I2C_DEVICE_DESCRIPTION * deviceTable,
-                int deviceTableEntries)
-        : _deviceTable{deviceTable}, _deviceTableEntries{deviceTableEntries},
-          _i2cBus{nullptr}, _lock{0}
-    {
-        memset(_present, 0, sizeof(_present));
-        r4aI2cBus = this;
-    }
+                int deviceTableEntries);
 
     // Delete the object
-    ~R4A_I2C_BUS()
-    {
-    }
+    ~R4A_I2C_BUS();
 
     // Enumerate the I2C bus
     // Inputs:
@@ -92,10 +84,7 @@ class R4A_I2C_BUS
     //
     // Outputs:
     //   Returns the TwoWire object address
-    TwoWire * getTwoWire()
-    {
-        return _i2cBus;
-    }
+    TwoWire * getTwoWire();
 
     // Check if an I2C device was seen during the enumeration
     // Inputs:
@@ -274,20 +263,10 @@ public:
     R4A_PCA9685(R4A_I2C_BUS * i2cBus,
                 uint8_t i2cAddress,
                 uint32_t scanClockHertz,
-                uint32_t externalClockHertz = 25 * 1000 * 1000)
-        : _channelModified{0},
-          _clockHz{scanClockHertz}, _externalClockHz{externalClockHertz},
-          _i2cBus{i2cBus}, _i2cAddress{i2cAddress}
-    {
-        memset(_channelRegs, 0, sizeof(_channelRegs));
-        memset(_max, 0, sizeof(_max));
-        memset(_min, 0, sizeof(_min));
-    }
+                uint32_t externalClockHertz = 25 * 1000 * 1000);
 
     // Destructor
-    ~R4A_PCA9685()
-    {
-    }
+    ~R4A_PCA9685();
 
     // Initialize the PA9685 LED controller
     // Output:
@@ -490,13 +469,7 @@ public:
     // Inputs:
     //   R4A_PCA9685 * pca9685: Address of the R4A_PCA9684 object
     //   channel: Channel controlling the motor
-    R4A_PCA9685_MOTOR(R4A_PCA9685 * pca9685, uint8_t channel)
-        : _dualChannel{false},
-          _minusChannel{0},
-          _pca9685{pca9685},
-          _plusChannel{channel}
-    {
-    }
+    R4A_PCA9685_MOTOR(R4A_PCA9685 * pca9685, uint8_t channel);
 
     // Constructor
     // Inputs:
@@ -505,18 +478,10 @@ public:
     //   minusChannel: Channel that is grounded during forward speeds
     R4A_PCA9685_MOTOR(R4A_PCA9685 * pca9685,
                       uint8_t plusChannel,
-                      uint8_t minusChannel)
-        : _pca9685{pca9685},
-          _dualChannel{true},
-          _plusChannel{plusChannel},
-          _minusChannel{minusChannel}
-    {
-    }
+                      uint8_t minusChannel);
 
     // Destructor
-    ~R4A_PCA9685_MOTOR()
-    {
-    }
+    ~R4A_PCA9685_MOTOR();
 
     // Buffers the brake value, call write to apply the brakes.  Applies
     // plus to both channels.  When the brakes are not applied the motor
@@ -774,20 +739,10 @@ public:
     R4A_PCA9685_SERVO(R4A_PCA9685 * pca9685,
                       uint8_t channel,
                       uint8_t minimum = 0,
-                      uint8_t maximum = 180)
-        : _pca9685{pca9685},
-          _channel{channel},
-          _maximum{maximum},
-          _minimum{minimum}
-    {
-        // Set the maximum and minimum for the servo
-        _pca9685->setMinMaxDegrees(_channel, minimum, maximum);
-    }
+                      uint8_t maximum = 180);
 
     // Destructor
-    ~R4A_PCA9685_SERVO()
-    {
-    }
+    ~R4A_PCA9685_SERVO();
 
     // Get the position of the servo
     // Inputs:
@@ -887,15 +842,10 @@ public:
     // Inputs:
     //   i2cBus: Address of an R4A_I2C object
     //   i2cAddress: Address of the PA9685 on the I2C bus
-    R4A_PCF8574(R4A_I2C_BUS * i2cBus, uint8_t i2cAddress)
-        : _i2cBus{i2cBus}, _i2cAddress{i2cAddress}
-    {
-    }
+    R4A_PCF8574(R4A_I2C_BUS * i2cBus, uint8_t i2cAddress);
 
     // Destructor
-    ~R4A_PCF8574()
-    {
-    }
+    ~R4A_PCF8574();
 
     // Read data from the PCF8574 port
     // Inputs:
@@ -908,7 +858,8 @@ public:
     // Inputs:
     //   data: Byte of data to be written
     // Outputs:
-// Returns true if the data byte was successfully written and false otherwise
+    //   Returns true if the data byte was successfully written and false
+    //   otherwise
     bool write(uint8_t data);
 };
 
@@ -1025,58 +976,7 @@ class R4A_ZED_F9P
     uint16_t _year;
 
     // Constructor
-    R4A_ZED_F9P(R4A_I2C_BUS * i2cBus, uint8_t i2cAddress)
-        : _altitude{0},
-          _altitudeArray{nullptr},
-          _altitudeCount{0},
-          _altitudeCountSave{0},
-          _altitudeMean{0},
-          _altitudeStdDev{0},
-          _carrierSolution{0},
-          _comment{nullptr},
-          _confirmedDate{false},
-          _confirmedTime{false},
-          _day{0},
-          _display{nullptr},
-          _displayRoutine{nullptr},
-          _displayParameter{0},
-          _fixType{0},
-          _fullyResolved{false},
-          _gnss{SFE_UBLOX_GNSS()},
-          _horizontalAccuracy{0},
-          _horizontalAccuracyArray{nullptr},
-          _horizontalMean{0},
-          _horizontalStdDev{0},
-          _hour{0},
-          _hpDataAvailable{false},
-          _i2cAddress{i2cAddress},
-          _i2cBus{i2cBus},
-          _i2cTransactionSize{128},
-          _latitude{0},
-          _latitudeArray{nullptr},
-          _latLongCount{0},
-          _latLongCountSave{0},
-          _latitudeMean{0},
-          _latitudeStdDev{0},
-          _longitude{0},
-          _longitudeArray{nullptr},
-          _longitudeMean{0},
-          _longitudeStdDev{0},
-          _millisecond{0},
-          _minute{0},
-          _month{0},
-          _nanosecond{0},
-          _online{false},
-          _satellitesInView{0},
-          _second{0},
-          _tAcc{0},
-          _twoWire{i2cBus->getTwoWire()},
-          _unitsFeetInches{false},
-          _validDate{false},
-          _validTime{false},
-          _year{0}
-    {
-    }
+    R4A_ZED_F9P(R4A_I2C_BUS * i2cBus, uint8_t i2cAddress);
 
     // Destructor
     ~R4A_ZED_F9P();

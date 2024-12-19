@@ -77,6 +77,32 @@ union PCA9685_Mode2Register
 (((((uint64_t)ticks) * 1000ull * 1000ull) + ((uint64_t)_clockHz * 4096ull / 2ull)) / ((uint64_t) _clockHz * 4096ull))
 
 //*********************************************************************
+// Constructor
+// Inputs:
+//   i2cBus: Address of an R4A_I2C object
+//   i2cAddress: Address of the PA9685 on the I2C bus
+//   scanClockHertz: Approximate frequency to scan the LEDs (23 - 1525)
+//   externalClockHertz: Frequency of external clock, zero (0) for internal clock
+R4A_PCA9685::R4A_PCA9685(R4A_I2C_BUS * i2cBus,
+                         uint8_t i2cAddress,
+                         uint32_t scanClockHertz,
+                         uint32_t externalClockHertz)
+    : _channelModified{0},
+      _clockHz{scanClockHertz}, _externalClockHz{externalClockHertz},
+      _i2cBus{i2cBus}, _i2cAddress{i2cAddress}
+{
+    memset(_channelRegs, 0, sizeof(_channelRegs));
+    memset(_max, 0, sizeof(_max));
+    memset(_min, 0, sizeof(_min));
+}
+
+//*********************************************************************
+// Destructor
+R4A_PCA9685::~R4A_PCA9685()
+{
+}
+
+//*********************************************************************
 // Initialize the LED controller
 // Return true if successful, false otherwise
 bool R4A_PCA9685::begin()
