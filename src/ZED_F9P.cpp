@@ -75,7 +75,7 @@ R4A_ZED_F9P::R4A_ZED_F9P(R4A_I2C_BUS * i2cBus, uint8_t i2cAddress)
       _satellitesInView{0},
       _second{0},
       _tAcc{0},
-      _twoWire{i2cBus->getTwoWire()},
+      _twoWire{r4aI2cBusGetTwoWire(_i2cBus)},
       _unitsFeetInches{false},
       _validDate{false},
       _validTime{false},
@@ -592,7 +592,8 @@ int R4A_ZED_F9P::pushRawData(uint8_t * buffer, int bytes, Print * display)
             bytesToWrite = _i2cTransactionSize;
 
         // Write the bytes
-        if (!_i2cBus->write(_i2cAddress,
+        if (!r4aI2cBusWrite(_i2cBus,
+                            _i2cAddress,
                             nullptr,        // cmdBuffer
                             0,              // cmdByteCount
                             buffer,         // dataBuffer

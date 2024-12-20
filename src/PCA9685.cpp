@@ -508,12 +508,14 @@ size_t R4A_PCA9685::readRegisters(uint8_t firstRegisterAddress,
     size_t bytesRead;
 
     // Read the data from the PCA9685
-    bytesRead = _i2cBus->read(_i2cAddress,
-                              &firstRegisterAddress,
-                              sizeof(firstRegisterAddress),
-                              dataBuffer,
-                              dataByteCount,
-                              display);
+    bytesRead = _i2cBus->_read(_i2cBus,
+                               _i2cAddress,
+                               &firstRegisterAddress,
+                               sizeof(firstRegisterAddress),
+                               dataBuffer,
+                               dataByteCount,
+                               display,
+                               true);
 
     // Display the final results
     if (display)
@@ -695,7 +697,8 @@ bool R4A_PCA9685::writeBufferedRegisters(Print * display)
                                 firstRegisterAddress, channelCount << 2);
 
             // Write the PCA9685 registers
-            success &= _i2cBus->write(_i2cAddress,
+            success &= r4aI2cBusWrite(_i2cBus,
+                                      _i2cAddress,
                                       &firstRegisterAddress,
                                       sizeof(firstRegisterAddress),
                                       &_channelRegs[firstChannel << 2],
@@ -719,7 +722,8 @@ bool R4A_PCA9685::writeRegisters(uint8_t firstRegisterAddress,
         Serial.printf("PCA9685 0x%02x <-- %d bytes\r\n", firstRegisterAddress, dataByteCount);
 
     // Write the PCA9685 registers
-    return _i2cBus->write(_i2cAddress,
+    return r4aI2cBusWrite(_i2cBus,
+                          _i2cAddress,
                           &firstRegisterAddress,
                           sizeof(firstRegisterAddress),
                           dataBuffer,
