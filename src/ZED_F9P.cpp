@@ -89,23 +89,23 @@ R4A_ZED_F9P::~R4A_ZED_F9P()
 {
     if (_altitudeArray)
     {
-        free(_altitudeArray);
+        r4aFree((void *)_altitudeArray, "ZED altitude array (_altitudeArray)");
         _altitudeArray = nullptr;
     }
     if (_horizontalAccuracyArray)
     {
-        free(_horizontalAccuracyArray);
+        r4aFree((void *)_horizontalAccuracyArray, "ZED horizontal accuracy array (_horizontalAccuracyArray)");
         _horizontalAccuracyArray = nullptr;
     }
     _i2cBus = nullptr;
     if (_latitudeArray)
     {
-        free(_latitudeArray);
+        r4aFree((void *)_latitudeArray, "ZED latitude array (_latitudeArray)");
         _latitudeArray = nullptr;
     }
     if (_longitudeArray)
     {
-        free(_longitudeArray);
+        r4aFree((void *)_longitudeArray, "ZED longitude array (_longitudeArray)");
         _longitudeArray = nullptr;
     }
 }
@@ -230,14 +230,14 @@ bool R4A_ZED_F9P::collectData(int count, const char * comment, Print * display)
     // Get the horizontal position
     _latLongCount = count;
     _latLongCountSave = _latLongCount;
-    _latitudeArray = (double *)malloc(_latLongCount * sizeof(double));
-    _longitudeArray = (double *)malloc(_latLongCount * sizeof(double));
-    _horizontalAccuracyArray = (double *)malloc(_latLongCount * sizeof(double));
+    _latitudeArray = (double *)r4aMalloc(_latLongCount * sizeof(double), "ZED latitude array (_latitudeArray)");
+    _longitudeArray = (double *)r4aMalloc(_latLongCount * sizeof(double), "ZED longitude array (_longitudeArray)");
+    _horizontalAccuracyArray = (double *)r4aMalloc(_latLongCount * sizeof(double), "ZED horizontal accuracy array (_horizontalAccuracyArray)");
 
     // Get the vertical position
     _altitudeCount = _latLongCount;
     _altitudeCountSave = _altitudeCount;
-    _altitudeArray = (double *)malloc(_altitudeCount * sizeof(double));
+    _altitudeArray = (double *)r4aMalloc(_altitudeCount * sizeof(double), "ZED altitude array (_altitudeArray)");
 
     // Set the display
     _display = display;
@@ -647,9 +647,9 @@ void R4A_ZED_F9P::storeHPdata(UBX_NAV_HPPOSLLH_data_t * ubxDataStruct)
                                           &_horizontalStdDev);
 
             // Free the arrays
-            free(_latitudeArray);
-            free(_longitudeArray);
-            free(_horizontalAccuracyArray);
+            r4aFree((void *)_latitudeArray, "ZED latitude array (_latitudeArray)");
+            r4aFree((void *)_longitudeArray, "ZED longitude array (_longitudeArray)");
+            r4aFree((void *)_horizontalAccuracyArray, "ZED horizontal accuracy array (_horizontalAccuracyArray)");
             _latitudeArray = nullptr;
             _longitudeArray = nullptr;
             _horizontalAccuracyArray = nullptr;
@@ -703,7 +703,7 @@ void R4A_ZED_F9P::storePVTdata(UBX_NAV_PVT_data_t * ubxDataStruct)
                                         &_altitudeStdDev);
 
             // Free the array
-            free(_altitudeArray);
+            r4aFree((void *)_altitudeArray, "ZED altitude array (_altitudeArray)");
             _altitudeArray = nullptr;
         }
     }
