@@ -729,11 +729,9 @@ void R4A_ZED_F9P::update(uint32_t currentMsec, const char * comment, Print * dis
 
     // Determine if this is the last point in the array
     lastPoint = (!_latLongCount) && (!_altitudeCount);
-    if (!lastPoint)
-        return;
 
     // Display the computed point
-    if (_displayRoutine)
+    if (lastPoint && _displayRoutine)
     {
         // Display the computed point
         _displayRoutine(_displayParameter,
