@@ -864,6 +864,88 @@ public:
 };
 
 //****************************************
+// VK16K33
+//****************************************
+
+typedef struct _R4A_VK16K33
+{
+    R4A_I2C_BUS * i2cBus;
+    uint8_t i2cAddress;
+    uint8_t columns;
+    uint8_t rows;
+    uint8_t brightness;
+    uint8_t * pixels;
+} R4A_VK16K33;
+
+// Set the brightness (0-15)
+// Inputs:
+//   vk16k33: Address of a R4A_VK16K33 data structure
+//   brightness: A value from 0 to 15
+// Outputs:
+//   Returns true if successful and false upon failure
+bool r4aVk16k33Brightness(R4A_VK16K33 * vk16k33, uint8_t brightness);
+
+// Clear the RAM buffer
+// Inputs:
+//   vk16k33: Address of a R4A_VK16K33 data structure
+void r4aVk16k33ClearBuffer(R4A_VK16K33 * vk16k33);
+
+// Turn on the display, start the scanning of the LEDs
+// Inputs:
+//   vk16k33: Address of a R4A_VK16K33 data structure
+// Outputs:
+//   Returns true if successful and false upon failure
+bool r4aVk16k33DisplayOn(R4A_VK16K33 * vk16k33);
+
+// Copy the RAM buffer to the display
+// Start bit, I2C device address, ACK, register address, ACK, 16 data bytes
+// with ACKs and a stop bit, all at 400 KHz
+// ~410 uSec = (1+8+1+8+1+((8+1)×16)+1)÷(400×1000)
+// Inputs:
+//   vk16k33: Address of a R4A_VK16K33 data structure
+// Outputs:
+//   Returns true if successful and false upon failure
+bool r4aVk16k33DisplayPixels(R4A_VK16K33 * vk16k33);
+
+// Turn on the VK16K33 LED controller
+// Clear a pixel in the RAM buffer
+// Inputs:
+//   vk16k33: Address of a R4A_VK16K33 data structure
+// Outputs:
+//   Returns true if the pixel was cleared in the RAM buffer
+bool r4aVk16k33On(R4A_VK16K33 * vk16k33);
+
+// Clear a pixel in the RAM buffer
+// Inputs:
+//   vk16k33: Address of a R4A_VK16K33 data structure
+//   column: Number of the column to modify
+//   row: Number of the row to modify
+// Outputs:
+//   Returns true if the pixel was cleared in the RAM buffer
+bool r4aVk16k33PixelClear(R4A_VK16K33 * vk16k33, uint8_t column, uint8_t row);
+
+// Set a pixel in the RAM buffer
+// Inputs:
+//   vk16k33: Address of a R4A_VK16K33 data structure
+//   column: Number of the column to modify
+//   row: Number of the row to modify
+// Outputs:
+//   Returns true if the pixel was set in the RAM buffer
+bool r4aVk16k33PixelSet(R4A_VK16K33 * vk16k33, uint8_t column, uint8_t row);
+
+// Initialize the VK16K33
+// Inputs:
+//   vk16k33: Address of a R4A_VK16K33 data structure
+bool r4aVk16k33Setup(R4A_VK16K33 * vk16k33);
+
+// Write a column of eight pixels in the RAM buffer
+// Inputs:
+//   vk16k33: Address of a R4A_VK16K33 data structure
+//   column: Column number to update with the data
+//   data: Data for the 8-bit column
+bool r4aVk16k33WriteColumn(R4A_VK16K33 * vk16k33, uint8_t column, uint8_t data);
+
+//****************************************
 // u-blox ZED F9P class
 //****************************************
 
