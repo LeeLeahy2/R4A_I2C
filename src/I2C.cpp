@@ -19,7 +19,7 @@ void r4aI2cBusEnumerate(R4A_I2C_BUS * i2cBus, Print * display)
 
     // Walk all of the I2C addresses
     deviceFound = false;
-    for (uint8_t addr = 0; addr <= 0x7f; addr++)
+    for (R4A_I2C_ADDRESS_t addr = 0; addr < R4A_I2C_ADDRESSES; addr++)
     {
         present = false;
         timer = millis();
@@ -38,7 +38,7 @@ void r4aI2cBusEnumerate(R4A_I2C_BUS * i2cBus, Print * display)
 
             // Look up the display name
             for (index = 0; index < i2cBus->_deviceTableEntries; index++)
-                if (i2cBus->_deviceTable && (i2cBus->_deviceTable[index].deviceAddress == addr))
+                if (i2cBus->_deviceTable && (i2cBus->_deviceTable[index].i2cAddress == addr))
                 {
                     deviceFound = true;
                     break;
@@ -47,11 +47,11 @@ void r4aI2cBusEnumerate(R4A_I2C_BUS * i2cBus, Print * display)
             if (display)
             {
                 if (index < i2cBus->_deviceTableEntries)
-                    display->printf("    0x%02x: %s\r\n", addr, i2cBus->_deviceTable[index].displayName);
+                    display->printf("    0x%03x: %s\r\n", addr, i2cBus->_deviceTable[index].displayName);
                 else if (addr == 0)
-                    display->printf("    0x%02x: General Call\r\n", addr);
+                    display->printf("    0x%03x: General Call\r\n", addr);
                 else
-                    display->printf("    0x%02x: ???\r\n", addr);
+                    display->printf("    0x%03x: ???\r\n", addr);
             }
         }
         else if ((millis() - timer) > 50)
@@ -80,7 +80,7 @@ void r4aI2cBusEnumerate(R4A_I2C_BUS * i2cBus, Print * display)
 //*********************************************************************
 // Ping an I2C device and see if it responds
 // Return true if device detected, false otherwise
-bool r4aI2cBusEnumerateDevice(R4A_I2C_BUS * i2cBus, uint8_t deviceAddress)
+bool r4aI2cBusEnumerateDevice(R4A_I2C_BUS * i2cBus, R4A_I2C_ADDRESS_t i2cAddress)
 {
     int status;
 
@@ -88,7 +88,7 @@ bool r4aI2cBusEnumerateDevice(R4A_I2C_BUS * i2cBus, uint8_t deviceAddress)
     r4aLockAcquire(&i2cBus->_lock);
 
     // Check for an I2C device
-    i2cBus->_twoWire->beginTransmission(deviceAddress);
+    i2cBus->_twoWire->beginTransmission(i2cAddress);
     status = i2cBus->_twoWire->endTransmission();
 
     // Release the lock
@@ -117,17 +117,18 @@ TwoWire * r4aI2cBusGetTwoWire(R4A_I2C_BUS * i2cBus)
 //*********************************************************************
 // Check if an I2C device was seen during the enumeration
 // Return true if device detected, false otherwise
-bool r4aI2cBusIsDevicePresent(R4A_I2C_BUS * i2cBus, uint8_t deviceAddress)
+bool r4aI2cBusIsDevicePresent(R4A_I2C_BUS * i2cBus, R4A_I2C_ADDRESS_t i2cAddress)
 {
     if (!i2cBus->_enumerated)
         r4aI2cBusEnumerate(i2cBus, nullptr);
-    return i2cBus->_present[deviceAddress / 8] & (1 << (deviceAddress & 7));
+    return i2cBus->_present[i2cAddress / 8] & (1 << (i2cAddress & 7));
 }
 
 //*********************************************************************
 // Send data to an I2C peripheral
 // Return true upon success, false otherwise
-bool r4aI2cBusWrite(R4A_I2C_BUS * i2cBus, uint8_t deviceI2cAddress,
+bool r4aI2cBusWrite(R4A_I2C_BUS * i2cBus,
+                        R4A_I2C_ADDRESS_t i2cAddress,
                         const uint8_t * cmdBuffer,
                         size_t cmdByteCount,
                         const uint8_t * dataBuffer,
@@ -142,7 +143,7 @@ bool r4aI2cBusWrite(R4A_I2C_BUS * i2cBus, uint8_t deviceI2cAddress,
 
     // Perform the I2C write operation
     status = i2cBus->_writeWithLock(i2cBus,
-                                    deviceI2cAddress,
+                                    i2cAddress,
                                     cmdBuffer,
                                     cmdByteCount,
                                     dataBuffer,
@@ -166,7 +167,7 @@ bool r4aI2cBusWrite(R4A_I2C_BUS * i2cBus, uint8_t deviceI2cAddress,
 bool r4aI2cMenuGetAddressRegister(const R4A_MENU_ENTRY * menuEntry,
                                   const char * command,
                                   int * values,
-                                  uint8_t * i2cAddress,
+                                  R4A_I2C_ADDRESS_t * i2cAddress,
                                   uint8_t * i2cRegister)
 {
     int a;
@@ -176,12 +177,12 @@ bool r4aI2cMenuGetAddressRegister(const R4A_MENU_ENTRY * menuEntry,
     String line = r4aMenuGetParameters(menuEntry, command);
 
     // Get the values
-    *values = sscanf(line.c_str(), "%02x %02x", &a, &r);
+    *values = sscanf(line.c_str(), "%x %x", &a, &r);
 
     // Determine if the values are within range
     if ((*values == 2)
         && (a >= 0)
-        && (a <= 0x7f)
+        && (a < R4A_I2C_ADDRESSES)
         && (r >= 0)
         && (r <= 0xff))
     {
@@ -202,7 +203,7 @@ bool r4aI2cMenuGetAddressRegister(const R4A_MENU_ENTRY * menuEntry,
 bool r4aI2cMenuGetAddressRegisterData(const R4A_MENU_ENTRY * menuEntry,
                                       const char * command,
                                       int * values,
-                                      uint8_t * i2cAddress,
+                                      R4A_I2C_ADDRESS_t * i2cAddress,
                                       uint8_t * i2cRegister,
                                       uint8_t * data)
 {
@@ -214,12 +215,12 @@ bool r4aI2cMenuGetAddressRegisterData(const R4A_MENU_ENTRY * menuEntry,
     String line = r4aMenuGetParameters(menuEntry, command);
 
     // Get the values
-    *values = sscanf(line.c_str(), "%2x %2x %2x", &a, &r, &w);
+    *values = sscanf(line.c_str(), "%x %x %x", &a, &r, &w);
 
     // Determine if the values are within range
     if ((*values == 3)
         && (a >= 0)
-        && (a <= 0x7f)
+        && (a < R4A_I2C_ADDRESSES)
         && (r >= 0)
         && (r <= 0xff)
         && (w >= 0)
@@ -258,7 +259,7 @@ void r4aI2cMenuRead(const R4A_MENU_ENTRY * menuEntry,
 {
     int bytesRead;
     uint8_t data;
-    uint8_t i2cAddress;
+    R4A_I2C_ADDRESS_t i2cAddress;
     uint8_t i2cRegister;
     int values;
 
@@ -277,17 +278,17 @@ void r4aI2cMenuRead(const R4A_MENU_ENTRY * menuEntry,
         if (bytesRead != sizeof(data))
             display->println("Failed to read register!");
         else if (values == 1)
-            display->printf("0x%02x: 0x%02x (%d)\r\n",
+            display->printf("0x%03x: 0x%02x (%d)\r\n",
                             i2cAddress,
                             data, data);
         else
-            display->printf("0x%02x[0x%02x]: 0x%02x (%d)\r\n",
+            display->printf("0x%03x[0x%02x]: 0x%02x (%d)\r\n",
                             i2cAddress,
                             i2cRegister,
                             data, data);
     }
     else if (values <= 0)
-        display->println("Please specify the I2C address (0 - 0x7f) for aa");
+        display->println("Please specify the I2C address (0 - 0x3ff) for aa");
 }
 
 //*********************************************************************
@@ -298,7 +299,7 @@ void r4aI2cMenuWrite(const R4A_MENU_ENTRY * menuEntry,
 {
     int bytesWritten;
     uint8_t data;
-    uint8_t i2cAddress;
+    R4A_I2C_ADDRESS_t i2cAddress;
     uint8_t i2cRegister;
     int values;
 
@@ -317,7 +318,7 @@ void r4aI2cMenuWrite(const R4A_MENU_ENTRY * menuEntry,
             display->println("Failed to write register!");
     }
     else if (values <= 0)
-        display->println("Please specify the I2C address (0 - 0x7f) for aa");
+        display->println("Please specify the I2C address (0 - 0x3ff) for aa");
     else if (values == 1)
         display->println("Please specify the I2C register (0 - 0xff) for rr");
 }

@@ -12,7 +12,7 @@
 // Inputs:
 //   i2cBus: Address of an R4A_I2C object
 //   i2cAddress: Address of the PA9685 on the I2C bus
-R4A_PCF8574::R4A_PCF8574(R4A_I2C_BUS * i2cBus, uint8_t i2cAddress)
+R4A_PCF8574::R4A_PCF8574(R4A_I2C_BUS * i2cBus, R4A_I2C_ADDRESS_t i2cAddress)
     : _i2cBus{i2cBus}, _i2cAddress{i2cAddress}
 {
 }

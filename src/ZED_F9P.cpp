@@ -30,7 +30,7 @@ R4A_ZED_F9P * r4aZedF9p;
 
 //*********************************************************************
 // Constructor
-R4A_ZED_F9P::R4A_ZED_F9P(R4A_I2C_BUS * i2cBus, uint8_t i2cAddress)
+R4A_ZED_F9P::R4A_ZED_F9P(R4A_I2C_BUS * i2cBus, R4A_I2C_ADDRESS_t i2cAddress)
     : _altitude{0},
       _altitudeArray{nullptr},
       _altitudeCount{0},

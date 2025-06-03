@@ -84,7 +84,7 @@ union PCA9685_Mode2Register
 //   scanClockHertz: Approximate frequency to scan the LEDs (23 - 1525)
 //   externalClockHertz: Frequency of external clock, zero (0) for internal clock
 R4A_PCA9685::R4A_PCA9685(R4A_I2C_BUS * i2cBus,
-                         uint8_t i2cAddress,
+                         R4A_I2C_ADDRESS_t i2cAddress,
                          uint32_t scanClockHertz,
                          uint32_t externalClockHertz)
     : _channelModified{0},

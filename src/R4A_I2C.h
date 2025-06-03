@@ -30,6 +30,18 @@ const uint8_t R4A_I2C_SWRST = 0x06;
 #define R4A_I2C_FAST_MODE_PLUS_HZ       (1 * 1000 * 1000)   // 1.0 MHz
 #define R4A_I2C_HIGH_SPEED_MODE_HZ      (34 * 100 * 1000)   // 3.4 MHz
 
+#define R4A_I2C_ADDRESSES       128     // Total addresses available on the I2C bus
+
+//****************************************
+// Forward data structures
+//****************************************
+
+#if (R4A_I2C_ADDRESSES == 128)
+typedef uint8_t R4A_I2C_ADDRESS_t;  // 0 - 127 (0x7f), 7-bit address
+#else
+typedef uint16_t R4A_I2C_ADDRESS_t; // 0 - 1023 (0x3ff), 10-bit address
+#endif
+
 //****************************************
 // Generic I2C Class
 //****************************************
@@ -37,14 +49,14 @@ const uint8_t R4A_I2C_SWRST = 0x06;
 // I2C device description
 typedef struct _R4A_I2C_DEVICE_DESCRIPTION
 {
-    uint8_t deviceAddress;      // I2C device address: 0 - 0x7f
+    R4A_I2C_ADDRESS_t i2cAddress; // I2C device address
     const char * displayName;   // Name to display when the device is found
 } R4A_I2C_DEVICE_DESCRIPTION;
 
 // Read data from an I2C peripheral
 // Inputs:
 //   i2cBus: Address of a R4A_I2C_BUS data structure
-//   deviceAddress: Device address on the I2C bus (0 - 0x7f)
+//   i2cAddress: Device address on the I2C bus
 //   cmdBuffer: Address of the buffer containing the command bytes, may be nullptr
 //   cmdByteCount: Number of bytes to send from the command buffer
 //   dataBuffer: Address of the buffer to receive the data bytes, may be nullptr
@@ -54,7 +66,7 @@ typedef struct _R4A_I2C_DEVICE_DESCRIPTION
 // Outputs:
 //   Returns the number of bytes read
 typedef size_t (* R4A_I2C_BUS_READ)(struct _R4A_I2C_BUS * i2cBus,
-                                    uint8_t deviceI2cAddress,
+                                    R4A_I2C_ADDRESS_t i2cAddress,
                                     const uint8_t * cmdBuffer, // Does not include I2C address
                                     size_t cmdByteCount,
                                     uint8_t * readBuffer,
@@ -65,7 +77,7 @@ typedef size_t (* R4A_I2C_BUS_READ)(struct _R4A_I2C_BUS * i2cBus,
 // Send data to an I2C peripheral, entered with the I2C bus lock held
 // Inputs:
 //   i2cBus: Address of a R4A_I2C_BUS data structure
-//   deviceAddress: Device address on the I2C bus (0 - 0x7f)
+//   i2cAddress: Device address on the I2C bus
 //   cmdBuffer: Address of the buffer containing the command bytes, may be nullptr
 //   cmdByteCount: Number of bytes to send from the command buffer
 //   dataBuffer: Address of the buffer containing the data bytes, may be nullptr
@@ -75,7 +87,7 @@ typedef size_t (* R4A_I2C_BUS_READ)(struct _R4A_I2C_BUS * i2cBus,
 // Outputs:
 //   Returns true upon success, false otherwise
 typedef bool (* R4A_I2C_BUS_WRITE_WITH_LOCK)(struct _R4A_I2C_BUS * i2cBus,
-                                             uint8_t deviceI2cAddress,
+                                             R4A_I2C_ADDRESS_t i2cAddress,
                                              const uint8_t * cmdBuffer,
                                              size_t cmdByteCount,
                                              const uint8_t * dataBuffer,
@@ -90,7 +102,7 @@ typedef struct _R4A_I2C_BUS
     const R4A_I2C_DEVICE_DESCRIPTION * const _deviceTable; // I2C device table
     const int _deviceTableEntries; // Number of entries in the I2C device table
     volatile int32_t _lock; // Lock to synchronize access to the I2C bus
-    uint8_t _present[16];   // Device detected on the I2C bus during enumeration
+    uint8_t _present[R4A_I2C_ADDRESSES / 8]; // Device detected on the I2C bus during enumeration
 
     R4A_I2C_BUS_WRITE_WITH_LOCK _writeWithLock;
 
@@ -112,11 +124,11 @@ void r4aI2cBusEnumerate(R4A_I2C_BUS * i2cBus,
 // Ping an I2C device and see if it responds
 // Inputs:
 //   i2cBus: Address of a R4A_I2C_BUS data structure
-//   deviceAddress: Device address on the I2C bus (0 - 0x7f)
+//   i2cAddress: Device address on the I2C bus
 // Outputs:
 //   Returns true if device detected, false otherwise
 bool r4aI2cBusEnumerateDevice(R4A_I2C_BUS * i2cBus,
-                              uint8_t deviceAddress);
+                              R4A_I2C_ADDRESS_t i2cAddress);
 
 // Get the TwoWire pointer
 //
@@ -133,16 +145,16 @@ TwoWire * r4aI2cBusGetTwoWire(R4A_I2C_BUS * i2cBus);
 // Check if an I2C device was seen during the enumeration
 // Inputs:
 //   i2cBus: Address of a R4A_I2C_BUS data structure
-//   deviceAddress: Device address on the I2C bus (0 - 0x7f)
+//   i2cAddress: Device address on the I2C bus
 // Outputs:
 //   Returns true if device detected, false otherwise
 bool r4aI2cBusIsDevicePresent(R4A_I2C_BUS * i2cBus,
-                              uint8_t deviceAddress);
+                              R4A_I2C_ADDRESS_t i2cAddress);
 
 // Send data to an I2C peripheral
 // Inputs:
 //   i2cBus: Address of a R4A_I2C_BUS data structure
-//   deviceAddress: Device address on the I2C bus (0 - 0x7f)
+//   i2cAddress: Device address on the I2C bus
 //   cmdBuffer: Address of the buffer containing the command bytes, may be nullptr
 //   cmdByteCount: Number of bytes to send from the command buffer
 //   dataBuffer: Address of the buffer containing the data bytes, may be nullptr
@@ -152,7 +164,7 @@ bool r4aI2cBusIsDevicePresent(R4A_I2C_BUS * i2cBus,
 // Outputs:
 //   Returns true upon success, false otherwise
 bool r4aI2cBusWrite(R4A_I2C_BUS * i2cBus,
-                    uint8_t deviceI2cAddress,
+                    R4A_I2C_ADDRESS_t i2cAddress,
                     const uint8_t * cmdBuffer,
                     size_t cmdByteCount,
                     const uint8_t * dataBuffer,
@@ -228,7 +240,7 @@ private:
     uint32_t _clockHz;                  // Operating frequence
     const uint32_t _externalClockHz;    // External clock frequency
     R4A_I2C_BUS * const _i2cBus;        // I2C bus to access the PCA9586
-    const uint8_t  _i2cAddress;         // Address of the PCA9586
+    const R4A_I2C_ADDRESS_t  _i2cAddress;     // Address of the PCA9586
     uint16_t _max[R4A_PCA9685_CHANNEL_COUNT]; // Maximum value for this channel
     uint16_t _min[R4A_PCA9685_CHANNEL_COUNT]; // Minimum value for this channel
 
@@ -241,7 +253,7 @@ public:
     //   scanClockHertz: Approximate frequency to scan the LEDs (23 - 1525)
     //   externalClockHertz: Frequency of external clock, zero (0) for internal clock
     R4A_PCA9685(R4A_I2C_BUS * i2cBus,
-                uint8_t i2cAddress,
+                R4A_I2C_ADDRESS_t i2cAddress,
                 uint32_t scanClockHertz,
                 uint32_t externalClockHertz = 25 * 1000 * 1000);
 
@@ -814,7 +826,7 @@ class R4A_PCF8574
 private:
 
     R4A_I2C_BUS * const _i2cBus;    // I2C bus to access the PCF8574
-    const uint8_t  _i2cAddress;     // Address of the PCF8574
+    const R4A_I2C_ADDRESS_t  _i2cAddress; // Address of the PCF8574
 
 public:
 
@@ -822,7 +834,7 @@ public:
     // Inputs:
     //   i2cBus: Address of an R4A_I2C object
     //   i2cAddress: Address of the PA9685 on the I2C bus
-    R4A_PCF8574(R4A_I2C_BUS * i2cBus, uint8_t i2cAddress);
+    R4A_PCF8574(R4A_I2C_BUS * i2cBus, R4A_I2C_ADDRESS_t i2cAddress);
 
     // Destructor
     ~R4A_PCF8574();
@@ -854,7 +866,7 @@ public:
 typedef struct _R4A_VK16K33
 {
     R4A_I2C_BUS * i2cBus;
-    uint8_t i2cAddress;
+    R4A_I2C_ADDRESS_t i2cAddress;
     const uint8_t * const columnMap;
     const uint8_t * const rowMap;
     uint8_t columns;
@@ -1023,7 +1035,7 @@ class R4A_ZED_F9P
     SFE_UBLOX_GNSS _gnss;
     double _horizontalMean;
     double _horizontalStdDev;
-    const uint8_t _i2cAddress;
+    const R4A_I2C_ADDRESS_t _i2cAddress;
     R4A_I2C_BUS * _i2cBus;
     double _latitudeMean;
     double _latitudeStdDev;
@@ -1077,7 +1089,7 @@ class R4A_ZED_F9P
     uint16_t _year;
 
     // Constructor
-    R4A_ZED_F9P(R4A_I2C_BUS * i2cBus, uint8_t i2cAddress);
+    R4A_ZED_F9P(R4A_I2C_BUS * i2cBus, R4A_I2C_ADDRESS_t i2cAddress);
 
     // Destructor
     ~R4A_ZED_F9P();
@@ -1248,4 +1260,4 @@ void r4aZedF9pStorePVTdata(UBX_NAV_PVT_data_t * ubxDataStruct);
 
 extern R4A_ZED_F9P * r4aZedF9p;
 
-#endif  // R4A_I2C_BUS
+#endif  // __R4A_I2C_H__
