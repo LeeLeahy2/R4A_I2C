@@ -881,9 +881,12 @@ typedef struct _R4A_VK16K33
 // Inputs:
 //   vk16k33: Address of a R4A_VK16K33 data structure
 //   brightness: A value from 0 to 15
+//   display: Device used for output
 // Outputs:
 //   Returns true if successful and false upon failure
-bool r4aVk16k33Brightness(R4A_VK16K33 * vk16k33, uint8_t brightness);
+bool r4aVk16k33Brightness(R4A_VK16K33 * vk16k33,
+                          uint8_t brightness,
+                          Print * display = nullptr);
 
 // Clear the RAM buffer
 // Inputs:
@@ -893,9 +896,10 @@ void r4aVk16k33ClearBuffer(R4A_VK16K33 * vk16k33);
 // Turn on the display, start the scanning of the LEDs
 // Inputs:
 //   vk16k33: Address of a R4A_VK16K33 data structure
+//   display: Device used for output
 // Outputs:
 //   Returns true if successful and false upon failure
-bool r4aVk16k33DisplayOn(R4A_VK16K33 * vk16k33);
+bool r4aVk16k33DisplayOn(R4A_VK16K33 * vk16k33, Print * display = nullptr);
 
 // Copy the RAM buffer to the display
 // Start bit, I2C device address, ACK, register address, ACK, 16 data bytes
@@ -903,17 +907,19 @@ bool r4aVk16k33DisplayOn(R4A_VK16K33 * vk16k33);
 // ~410 uSec = (1+8+1+8+1+((8+1)×16)+1)÷(400×1000)
 // Inputs:
 //   vk16k33: Address of a R4A_VK16K33 data structure
+//   display: Device used for output
 // Outputs:
 //   Returns true if successful and false upon failure
-bool r4aVk16k33DisplayPixels(R4A_VK16K33 * vk16k33);
+bool r4aVk16k33DisplayPixels(R4A_VK16K33 * vk16k33, Print * display = nullptr);
 
 // Turn on the VK16K33 LED controller
 // Clear a pixel in the RAM buffer
 // Inputs:
 //   vk16k33: Address of a R4A_VK16K33 data structure
+//   display: Device used for output
 // Outputs:
 //   Returns true if the pixel was cleared in the RAM buffer
-bool r4aVk16k33On(R4A_VK16K33 * vk16k33);
+bool r4aVk16k33On(R4A_VK16K33 * vk16k33, Print * display = nullptr);
 
 // Clear a pixel in the RAM buffer
 // Inputs:
@@ -936,7 +942,8 @@ bool r4aVk16k33PixelSet(R4A_VK16K33 * vk16k33, uint8_t column, uint8_t row);
 // Initialize the VK16K33
 // Inputs:
 //   vk16k33: Address of a R4A_VK16K33 data structure
-bool r4aVk16k33Setup(R4A_VK16K33 * vk16k33);
+//   display: Device used for output
+bool r4aVk16k33Setup(R4A_VK16K33 * vk16k33, Print * display = nullptr);
 
 // Write a column of eight pixels in the RAM buffer
 // Inputs:

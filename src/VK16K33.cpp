@@ -46,7 +46,9 @@
 
 //*********************************************************************
 // Set the brightness (0-15)
-bool r4aVk16k33Brightness(R4A_VK16K33 * vk16k33, uint8_t brightness)
+bool r4aVk16k33Brightness(R4A_VK16K33 * vk16k33,
+                          uint8_t brightness,
+                          Print * display)
 {
     uint8_t cmd;
     bool success = false;
@@ -59,9 +61,10 @@ bool r4aVk16k33Brightness(R4A_VK16K33 * vk16k33, uint8_t brightness)
                              &cmd,
                              sizeof(cmd),
                              nullptr,
-                             0);
-    if (!success)
-        Serial.printf("ERROR: Failed to set VK16K33 brightness!\r\n");
+                             0,
+                             display);
+    if ((!success) && display)
+        display->printf("ERROR: Failed to set VK16K33 brightness!\r\n");
     return success;
 }
 
@@ -74,7 +77,7 @@ void r4aVk16k33ClearBuffer(R4A_VK16K33 * vk16k33)
 
 //*********************************************************************
 // Turn on the display
-bool r4aVk16k33DisplayOn(R4A_VK16K33 * vk16k33)
+bool r4aVk16k33DisplayOn(R4A_VK16K33 * vk16k33, Print * display)
 {
     uint8_t cmd;
     bool success = false;
@@ -89,7 +92,8 @@ bool r4aVk16k33DisplayOn(R4A_VK16K33 * vk16k33)
                              &cmd,
                              sizeof(cmd),
                              nullptr,
-                             0);
+                             0,
+                             display);
     if (!success)
         Serial.printf("ERROR: Failed to turn on VK16K33 display!\r\n");
     return success;
@@ -100,7 +104,7 @@ bool r4aVk16k33DisplayOn(R4A_VK16K33 * vk16k33)
 // Start bit, I2C device address, ACK, register address, ACK, 16 data bytes
 // with ACKs and a stop bit, all at 400 KHz
 // ~410 uSec = (1+8+1+8+1+((8+1)×16)+1)÷(400×1000)
-bool r4aVk16k33DisplayPixels(R4A_VK16K33 * vk16k33)
+bool r4aVk16k33DisplayPixels(R4A_VK16K33 * vk16k33, Print * display)
 {
     uint8_t cmd;
     bool success = false;
@@ -115,10 +119,12 @@ bool r4aVk16k33DisplayPixels(R4A_VK16K33 * vk16k33)
                                  &cmd,
                                  sizeof(cmd),
                                  vk16k33->pixels,
-                                 R4A_VK16K33_MAX_COLUMNS);
+                                 R4A_VK16K33_MAX_COLUMNS,
+                                 display);
         if (!success)
         {
-            Serial.printf("ERROR: Failed to write VK16K33 pixel data!\r\n");
+            if (display)
+                display->printf("ERROR: Failed to write VK16K33 pixel data!\r\n");
             break;
         }
     } while (0);
@@ -127,7 +133,7 @@ bool r4aVk16k33DisplayPixels(R4A_VK16K33 * vk16k33)
 
 //*********************************************************************
 // Turn on the VK16K33 LED controller
-bool r4aVk16k33On(R4A_VK16K33 * vk16k33)
+bool r4aVk16k33On(R4A_VK16K33 * vk16k33, Print * display)
 {
     uint8_t cmd;
     bool success;
@@ -141,7 +147,8 @@ bool r4aVk16k33On(R4A_VK16K33 * vk16k33)
                              &cmd,
                              sizeof(cmd),
                              nullptr,
-                             0);
+                             0,
+                             display);
     if (!success)
         Serial.printf("ERROR: Failed to turn on VK16K33!\r\n");
     return success;
@@ -205,7 +212,7 @@ bool r4aVk16k33PixelSet(R4A_VK16K33 * vk16k33, uint8_t column, uint8_t row)
 
 //*********************************************************************
 // Initialize the VK16K33
-bool r4aVk16k33Setup(R4A_VK16K33 * vk16k33)
+bool r4aVk16k33Setup(R4A_VK16K33 * vk16k33, Print * display)
 {
     uint8_t cmd;
     bool success = false;
@@ -215,14 +222,16 @@ bool r4aVk16k33Setup(R4A_VK16K33 * vk16k33)
         // Verify the number of columns and rows
         if (vk16k33->columns > R4A_VK16K33_MAX_COLUMNS)
         {
-            Serial.printf("ERROR: Too many columns, columns <= %d\r\n",
-                          R4A_VK16K33_MAX_COLUMNS);
+            if (display)
+                display->printf("ERROR: Too many columns, columns <= %d\r\n",
+                                R4A_VK16K33_MAX_COLUMNS);
             break;
         }
         if (vk16k33->rows > R4A_VK16K33_MAX_ROWS)
         {
-            Serial.printf("ERROR: Too many rows, rows <= %d\r\n",
-                          R4A_VK16K33_MAX_ROWS);
+            if (display)
+                display->printf("ERROR: Too many rows, rows <= %d\r\n",
+                                R4A_VK16K33_MAX_ROWS);
             break;
         }
 
@@ -230,29 +239,30 @@ bool r4aVk16k33Setup(R4A_VK16K33 * vk16k33)
         vk16k33->pixels = (uint8_t *)r4aDmaMalloc(R4A_VK16K33_MAX_COLUMNS, "vk16k33 pixel buffer");
         if (vk16k33->pixels == nullptr)
         {
-            Serial.printf("ERROR: Failed to allocate pixel array!\r\n");
+            if (display)
+                display->printf("ERROR: Failed to allocate pixel array!\r\n");
             break;
         }
 
         // Turn on the controller
-        success = r4aVk16k33On(vk16k33);
+        success = r4aVk16k33On(vk16k33, display);
         if (!success)
             break;
 
         // Clear the display buffer
         r4aVk16k33ClearBuffer(vk16k33);
-        success = r4aVk16k33DisplayPixels(vk16k33);
+        success = r4aVk16k33DisplayPixels(vk16k33, display);
         if (!success)
             break;
 
         // Turn on the display, start the scanning of the LEDs
-        success = r4aVk16k33DisplayOn(vk16k33);
+        success = r4aVk16k33DisplayOn(vk16k33, display);
         if (!success)
             break;
 
         // Use the Display Brightness command to set the pulse width, see
         // VK16K33 specification v1.2, page 27
-        success = r4aVk16k33Brightness(vk16k33, vk16k33->brightness);
+        success = r4aVk16k33Brightness(vk16k33, vk16k33->brightness, display);
         if (!success)
             break;
     } while (0);
