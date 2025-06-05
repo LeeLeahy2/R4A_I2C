@@ -89,7 +89,7 @@ typedef struct _R4A_I2C_BUS
     TwoWire * _i2cBus;      // API for the I2C bus
     const R4A_I2C_DEVICE_DESCRIPTION * const _deviceTable; // I2C device table
     const int _deviceTableEntries; // Number of entries in the I2C device table
-    volatile int _lock;     // Lock to synchronize access to the I2C bus
+    volatile int32_t _lock; // Lock to synchronize access to the I2C bus
     uint8_t _present[16];   // Device detected on the I2C bus during enumeration
 
     R4A_I2C_BUS_WRITE_WITH_LOCK _writeWithLock;
