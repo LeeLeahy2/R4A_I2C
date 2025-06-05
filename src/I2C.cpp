@@ -162,28 +162,6 @@ bool r4aI2cBusWrite(R4A_I2C_BUS * i2cBus, uint8_t deviceI2cAddress,
 //****************************************
 
 //*********************************************************************
-// Display the help text with mm and ssss
-[[deprecated("Use r4aMenuHelpSuffix instead.")]]
-void r4aI2cMenuHelpAaRr(const struct _R4A_MENU_ENTRY * menuEntry,
-                        const char * align,
-                        Print * display)
-{
-    display->printf("%s aa rr: %s%s\r\n",
-                    menuEntry->command, align, menuEntry->helpText);
-}
-
-//*********************************************************************
-// Display the help text with mm and ssss
-[[deprecated("Use r4aMenuHelpSuffix instead.")]]
-void r4aI2cMenuHelpAaRrDd(const struct _R4A_MENU_ENTRY * menuEntry,
-                          const char * align,
-                          Print * display)
-{
-    display->printf("%s aa rr dd: %s%s\r\n",
-                    menuEntry->command, align, menuEntry->helpText);
-}
-
-//*********************************************************************
 // Get the I2C address and register numbers
 bool r4aI2cMenuGetAddressRegister(const R4A_MENU_ENTRY * menuEntry,
                                   const char * command,

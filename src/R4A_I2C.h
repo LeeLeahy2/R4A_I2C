@@ -167,26 +167,6 @@ bool r4aI2cBusWrite(R4A_I2C_BUS * i2cBus,
 extern const R4A_MENU_ENTRY r4aI2cMenuTable[]; // I2C menu
 #define R4A_I2C_MENU_ENTRIES        4   // Number of menu entries
 
-// Display the help text with mm and ssss
-// Inputs:
-//   menuEntry: Address of the object describing the menu entry
-//   align: Zero terminated string of spaces for alignment
-//   display: Device used for output
-[[deprecated("Use r4aMenuHelpSuffix instead.")]]
-void r4aI2cMenuHelpAaRr(const struct _R4A_MENU_ENTRY * menuEntry,
-                        const char * align,
-                        Print * display);
-
-// Display the help text with mm and ssss
-// Inputs:
-//   menuEntry: Address of the object describing the menu entry
-//   align: Zero terminated string of spaces for alignment
-//   display: Device used for output
-[[deprecated("Use r4aMenuHelpSuffix instead.")]]
-void r4aI2cMenuHelpAaRrDd(const struct _R4A_MENU_ENTRY * menuEntry,
-                          const char * align,
-                          Print * display);
-
 // Enumerate the I2C bus
 // Inputs:
 //   menuEntry: Address of the object describing the menu entry
