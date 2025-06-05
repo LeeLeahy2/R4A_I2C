@@ -43,7 +43,7 @@ typedef struct _R4A_I2C_DEVICE_DESCRIPTION
 
 // Read data from an I2C peripheral
 // Inputs:
-//   object: Address of a R4A_I2C_BUS data structure
+//   i2cBus: Address of a R4A_I2C_BUS data structure
 //   deviceAddress: Device address on the I2C bus (0 - 0x7f)
 //   cmdBuffer: Address of the buffer containing the command bytes, may be nullptr
 //   cmdByteCount: Number of bytes to send from the command buffer
@@ -53,7 +53,7 @@ typedef struct _R4A_I2C_DEVICE_DESCRIPTION
 //   releaseI2cBus: A value of true releases the I2C bus after the transaction
 // Outputs:
 //   Returns the number of bytes read
-typedef size_t (* R4A_I2C_BUS_READ)(struct _R4A_I2C_BUS * object,
+typedef size_t (* R4A_I2C_BUS_READ)(struct _R4A_I2C_BUS * i2cBus,
                                     uint8_t deviceI2cAddress,
                                     const uint8_t * cmdBuffer, // Does not include I2C address
                                     size_t cmdByteCount,
@@ -64,7 +64,7 @@ typedef size_t (* R4A_I2C_BUS_READ)(struct _R4A_I2C_BUS * object,
 
 // Send data to an I2C peripheral, entered with the I2C bus lock held
 // Inputs:
-//   object: Address of a R4A_I2C_BUS data structure
+//   i2cBus: Address of a R4A_I2C_BUS data structure
 //   deviceAddress: Device address on the I2C bus (0 - 0x7f)
 //   cmdBuffer: Address of the buffer containing the command bytes, may be nullptr
 //   cmdByteCount: Number of bytes to send from the command buffer
@@ -74,7 +74,7 @@ typedef size_t (* R4A_I2C_BUS_READ)(struct _R4A_I2C_BUS * object,
 //   releaseI2cBus: A value of true releases the I2C bus after the transaction
 // Outputs:
 //   Returns true upon success, false otherwise
-typedef bool (* R4A_I2C_BUS_WRITE_WITH_LOCK)(struct _R4A_I2C_BUS * object,
+typedef bool (* R4A_I2C_BUS_WRITE_WITH_LOCK)(struct _R4A_I2C_BUS * i2cBus,
                                              uint8_t deviceI2cAddress,
                                              const uint8_t * cmdBuffer,
                                              size_t cmdByteCount,
@@ -86,7 +86,7 @@ typedef bool (* R4A_I2C_BUS_WRITE_WITH_LOCK)(struct _R4A_I2C_BUS * object,
 typedef struct _R4A_I2C_BUS
 {
     // Private
-    TwoWire * _i2cBus;      // API for the I2C bus
+    TwoWire * _twoWire;     // API for the I2C bus
     const R4A_I2C_DEVICE_DESCRIPTION * const _deviceTable; // I2C device table
     const int _deviceTableEntries; // Number of entries in the I2C device table
     volatile int32_t _lock; // Lock to synchronize access to the I2C bus
@@ -104,18 +104,18 @@ extern R4A_I2C_BUS * r4aI2cBus; // I2C bus used in menus
 
 // Enumerate the I2C bus
 // Inputs:
-//   object: Address of a R4A_I2C_BUS data structure
+//   i2cBus: Address of a R4A_I2C_BUS data structure
 //   display: Device used for output
-void r4aI2cBusEnumerate(R4A_I2C_BUS * object,
+void r4aI2cBusEnumerate(R4A_I2C_BUS * i2cBus,
                         Print * display = &Serial);
 
 // Ping an I2C device and see if it responds
 // Inputs:
-//   object: Address of a R4A_I2C_BUS data structure
+//   i2cBus: Address of a R4A_I2C_BUS data structure
 //   deviceAddress: Device address on the I2C bus (0 - 0x7f)
 // Outputs:
 //   Returns true if device detected, false otherwise
-bool r4aI2cBusEnumerateDevice(R4A_I2C_BUS * object,
+bool r4aI2cBusEnumerateDevice(R4A_I2C_BUS * i2cBus,
                               uint8_t deviceAddress);
 
 // Get the TwoWire pointer
@@ -125,23 +125,23 @@ bool r4aI2cBusEnumerateDevice(R4A_I2C_BUS * object,
 // behavior!
 //
 // Inputs:
-//   object: Address of a R4A_I2C_BUS data structure
+//   i2cBus: Address of a R4A_I2C_BUS data structure
 // Outputs:
 //   Returns the TwoWire object address
-TwoWire * r4aI2cBusGetTwoWire(R4A_I2C_BUS * object);
+TwoWire * r4aI2cBusGetTwoWire(R4A_I2C_BUS * i2cBus);
 
 // Check if an I2C device was seen during the enumeration
 // Inputs:
-//   object: Address of a R4A_I2C_BUS data structure
+//   i2cBus: Address of a R4A_I2C_BUS data structure
 //   deviceAddress: Device address on the I2C bus (0 - 0x7f)
 // Outputs:
 //   Returns true if device detected, false otherwise
-bool r4aI2cBusIsDevicePresent(R4A_I2C_BUS * object,
+bool r4aI2cBusIsDevicePresent(R4A_I2C_BUS * i2cBus,
                               uint8_t deviceAddress);
 
 // Send data to an I2C peripheral
 // Inputs:
-//   object: Address of a R4A_I2C_BUS data structure
+//   i2cBus: Address of a R4A_I2C_BUS data structure
 //   deviceAddress: Device address on the I2C bus (0 - 0x7f)
 //   cmdBuffer: Address of the buffer containing the command bytes, may be nullptr
 //   cmdByteCount: Number of bytes to send from the command buffer
@@ -151,7 +151,7 @@ bool r4aI2cBusIsDevicePresent(R4A_I2C_BUS * object,
 //   releaseI2cBus: A value of true releases the I2C bus after the transaction
 // Outputs:
 //   Returns true upon success, false otherwise
-bool r4aI2cBusWrite(R4A_I2C_BUS * object,
+bool r4aI2cBusWrite(R4A_I2C_BUS * i2cBus,
                     uint8_t deviceI2cAddress,
                     const uint8_t * cmdBuffer,
                     size_t cmdByteCount,

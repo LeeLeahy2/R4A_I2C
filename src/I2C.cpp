@@ -9,7 +9,7 @@
 
 //*********************************************************************
 // Enumerate the I2C bus
-void r4aI2cBusEnumerate(R4A_I2C_BUS * object, Print * display)
+void r4aI2cBusEnumerate(R4A_I2C_BUS * i2cBus, Print * display)
 {
     bool deviceFound;
     int index;
@@ -23,7 +23,7 @@ void r4aI2cBusEnumerate(R4A_I2C_BUS * object, Print * display)
     {
         present = false;
         timer = millis();
-        if (r4aI2cBusEnumerateDevice(object, addr))
+        if (r4aI2cBusEnumerateDevice(i2cBus, addr))
         {
             present = true;
             if (deviceFound == false)
@@ -37,8 +37,8 @@ void r4aI2cBusEnumerate(R4A_I2C_BUS * object, Print * display)
             }
 
             // Look up the display name
-            for (index = 0; index < object->_deviceTableEntries; index++)
-                if (object->_deviceTable && (object->_deviceTable[index].deviceAddress == addr))
+            for (index = 0; index < i2cBus->_deviceTableEntries; index++)
+                if (i2cBus->_deviceTable && (i2cBus->_deviceTable[index].deviceAddress == addr))
                 {
                     deviceFound = true;
                     break;
@@ -46,8 +46,8 @@ void r4aI2cBusEnumerate(R4A_I2C_BUS * object, Print * display)
 
             if (display)
             {
-                if (index < object->_deviceTableEntries)
-                    display->printf("    0x%02x: %s\r\n", addr, object->_deviceTable[index].displayName);
+                if (index < i2cBus->_deviceTableEntries)
+                    display->printf("    0x%02x: %s\r\n", addr, i2cBus->_deviceTable[index].displayName);
                 else if (addr == 0)
                     display->printf("    0x%02x: General Call\r\n", addr);
                 else
@@ -64,13 +64,13 @@ void r4aI2cBusEnumerate(R4A_I2C_BUS * object, Print * display)
         // Update the present bit
         mask = 1 << (addr & 7);
         if (present)
-            object->_present[addr / 8] |= mask;
+            i2cBus->_present[addr / 8] |= mask;
         else
-            object->_present[addr / 8] &= ~mask;
+            i2cBus->_present[addr / 8] &= ~mask;
     }
 
     // Successful enumeration
-    object->_enumerated = true;
+    i2cBus->_enumerated = true;
 
     // Determine if any devices are on the bus
     if ((!deviceFound) && display)
@@ -80,19 +80,19 @@ void r4aI2cBusEnumerate(R4A_I2C_BUS * object, Print * display)
 //*********************************************************************
 // Ping an I2C device and see if it responds
 // Return true if device detected, false otherwise
-bool r4aI2cBusEnumerateDevice(R4A_I2C_BUS * object, uint8_t deviceAddress)
+bool r4aI2cBusEnumerateDevice(R4A_I2C_BUS * i2cBus, uint8_t deviceAddress)
 {
     int status;
 
     // Single thread the I2C requests
-    r4aLockAcquire(&object->_lock);
+    r4aLockAcquire(&i2cBus->_lock);
 
     // Check for an I2C device
-    object->_i2cBus->beginTransmission(deviceAddress);
-    status = object->_i2cBus->endTransmission();
+    i2cBus->_twoWire->beginTransmission(deviceAddress);
+    status = i2cBus->_twoWire->endTransmission();
 
     // Release the lock
-    r4aLockRelease(&object->_lock);
+    r4aLockRelease(&i2cBus->_lock);
 
     // Return the I2C device found status
     if (status == 0)
@@ -108,26 +108,26 @@ bool r4aI2cBusEnumerateDevice(R4A_I2C_BUS * object, uint8_t deviceAddress)
 // behavior!
 //
 // Outputs:
-//   Returns the TwoWire object address
-TwoWire * r4aI2cBusGetTwoWire(R4A_I2C_BUS * object)
+//   Returns the TwoWire i2cBus address
+TwoWire * r4aI2cBusGetTwoWire(R4A_I2C_BUS * i2cBus)
 {
-    return object->_i2cBus;
+    return i2cBus->_twoWire;
 }
 
 //*********************************************************************
 // Check if an I2C device was seen during the enumeration
 // Return true if device detected, false otherwise
-bool r4aI2cBusIsDevicePresent(R4A_I2C_BUS * object, uint8_t deviceAddress)
+bool r4aI2cBusIsDevicePresent(R4A_I2C_BUS * i2cBus, uint8_t deviceAddress)
 {
-    if (!object->_enumerated)
-        r4aI2cBusEnumerate(object, nullptr);
-    return object->_present[deviceAddress / 8] & (1 << (deviceAddress & 7));
+    if (!i2cBus->_enumerated)
+        r4aI2cBusEnumerate(i2cBus, nullptr);
+    return i2cBus->_present[deviceAddress / 8] & (1 << (deviceAddress & 7));
 }
 
 //*********************************************************************
 // Send data to an I2C peripheral
 // Return true upon success, false otherwise
-bool r4aI2cBusWrite(R4A_I2C_BUS * object, uint8_t deviceI2cAddress,
+bool r4aI2cBusWrite(R4A_I2C_BUS * i2cBus, uint8_t deviceI2cAddress,
                         const uint8_t * cmdBuffer,
                         size_t cmdByteCount,
                         const uint8_t * dataBuffer,
@@ -138,10 +138,10 @@ bool r4aI2cBusWrite(R4A_I2C_BUS * object, uint8_t deviceI2cAddress,
     bool status;
 
     // Single thread the I2C requests
-    r4aLockAcquire(&object->_lock);
+    r4aLockAcquire(&i2cBus->_lock);
 
     // Perform the I2C write operation
-    status = object->_writeWithLock(object,
+    status = i2cBus->_writeWithLock(i2cBus,
                                     deviceI2cAddress,
                                     cmdBuffer,
                                     cmdByteCount,
@@ -151,7 +151,7 @@ bool r4aI2cBusWrite(R4A_I2C_BUS * object, uint8_t deviceI2cAddress,
                                     releaseI2cBus);
 
     // Release the lock
-    r4aLockRelease(&object->_lock);
+    r4aLockRelease(&i2cBus->_lock);
 
     // Return the write status
     return status;
