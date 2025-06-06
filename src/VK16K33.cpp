@@ -41,8 +41,7 @@
 #define R4A_VK16K33_CDB_15_16           14  // 15 / 16
 #define R4A_VK16K33_CDB_16_16           15  // 16 / 16
 
-#define R4A_VK16K33_MAX_COLUMNS         16
-#define R4A_VK16K33_MAX_ROWS            8
+#define R4A_VK16K33_PIXEL_OFFSET        1   // Leave room for the command
 
 //*********************************************************************
 // Set the brightness (0-15)
@@ -106,20 +105,20 @@ bool r4aVk16k33DisplayOn(R4A_VK16K33 * vk16k33, Print * display)
 // ~410 uSec = (1+8+1+8+1+((8+1)×16)+1)÷(400×1000)
 bool r4aVk16k33DisplayPixels(R4A_VK16K33 * vk16k33, Print * display)
 {
-    uint8_t cmd;
     bool success = false;
 
     do
     {
+        // Concatenate the command and pixel data
         // Copy the RAM buffer to the display
         // HT16K33 specification v1.10, page 30
-        cmd = R4A_VK16K33_CMD_DATA_ADDRESS | 0;
+        vk16k33->pixels[0] = R4A_VK16K33_CMD_DATA_ADDRESS | 0;
         success = r4aI2cBusWrite(vk16k33->i2cBus,
                                  vk16k33->i2cAddress,
-                                 &cmd,
-                                 sizeof(cmd),
+                                 nullptr,
+                                 0,
                                  vk16k33->pixels,
-                                 R4A_VK16K33_MAX_COLUMNS,
+                                 sizeof(vk16k33->pixels),
                                  display);
         if (!success)
         {
@@ -140,8 +139,7 @@ bool r4aVk16k33On(R4A_VK16K33 * vk16k33, Print * display)
 
     // Use the System Set command to turn on the controller, see
     // VK16K33 specification v1.2, page 27
-    cmd = R4A_VK16K33_CMD_SYSTEM_SET
-        | R4A_VK16K33_CSS_ON;
+    cmd = R4A_VK16K33_CMD_SYSTEM_SET | R4A_VK16K33_CSS_ON;
     success = r4aI2cBusWrite(vk16k33->i2cBus,
                              vk16k33->i2cAddress,
                              &cmd,
@@ -176,7 +174,7 @@ bool r4aVk16k33PixelClear(R4A_VK16K33 * vk16k33, uint8_t column, uint8_t row)
 
         // Clear the pixel
         uint8_t bitMask = 1 << row;
-        vk16k33->pixels[column] &= ~bitMask;
+        vk16k33->pixels[R4A_VK16K33_PIXEL_OFFSET + column] &= ~bitMask;
         return true;
     } while (0);
     return false;
@@ -204,7 +202,7 @@ bool r4aVk16k33PixelSet(R4A_VK16K33 * vk16k33, uint8_t column, uint8_t row)
 
         // Set the pixel
         uint8_t bitMask = 1 << row;
-        vk16k33->pixels[column] |= bitMask;
+        vk16k33->pixels[R4A_VK16K33_PIXEL_OFFSET + column] |= bitMask;
         return true;
     } while (0);
     return false;
@@ -232,15 +230,6 @@ bool r4aVk16k33Setup(R4A_VK16K33 * vk16k33, Print * display)
             if (display)
                 display->printf("ERROR: Too many rows, rows <= %d\r\n",
                                 R4A_VK16K33_MAX_ROWS);
-            break;
-        }
-
-        // Allocate the pixel matrix
-        vk16k33->pixels = (uint8_t *)r4aDmaMalloc(R4A_VK16K33_MAX_COLUMNS, "vk16k33 pixel buffer");
-        if (vk16k33->pixels == nullptr)
-        {
-            if (display)
-                display->printf("ERROR: Failed to allocate pixel array!\r\n");
             break;
         }
 
@@ -282,6 +271,6 @@ bool r4aVk16k33WriteColumn(R4A_VK16K33 * vk16k33, uint8_t column, uint8_t data)
     }
 
     // Set the pixels
-    vk16k33->pixels[column] = data;
+    vk16k33->pixels[R4A_VK16K33_PIXEL_OFFSET + column] = data;
     return true;
 }

@@ -867,6 +867,9 @@ public:
 // VK16K33
 //****************************************
 
+#define R4A_VK16K33_MAX_COLUMNS         16
+#define R4A_VK16K33_MAX_ROWS            8
+
 typedef struct _R4A_VK16K33
 {
     R4A_I2C_BUS * i2cBus;
@@ -874,7 +877,7 @@ typedef struct _R4A_VK16K33
     uint8_t columns;
     uint8_t rows;
     uint8_t brightness;
-    uint8_t * pixels;
+    uint8_t pixels[1 + R4A_VK16K33_MAX_COLUMNS];
 } R4A_VK16K33;
 
 // Set the brightness (0-15)
