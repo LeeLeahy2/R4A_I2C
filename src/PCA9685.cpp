@@ -521,14 +521,14 @@ bool R4A_PCA9685::readRegisters(uint8_t firstRegisterAddress,
     }
 
     // Read the data from the PCA9685
-    if (_i2cBus->_read(_i2cBus,
-                       _i2cAddress,
-                       nullptr,
-                       0,
-                       dataBuffer,
-                       dataByteCount,
-                       display,
-                       true) == false)
+    if (r4aI2cBusRead(_i2cBus,
+                      _i2cAddress,
+                      nullptr,
+                      0,
+                      dataBuffer,
+                      dataByteCount,
+                      display,
+                      true) == false)
     {
         if (display)
             display->printf("ERROR: Failed to read the data from 0x%02x\r\n",
