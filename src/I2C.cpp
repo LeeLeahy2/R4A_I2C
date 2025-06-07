@@ -82,6 +82,8 @@ void r4aI2cBusEnumerate(R4A_I2C_BUS * i2cBus, Print * display)
 // Return true if device detected, false otherwise
 bool r4aI2cBusIsDevicePresent(R4A_I2C_BUS * i2cBus, R4A_I2C_ADDRESS_t i2cAddress)
 {
+    if ((i2cBus == nullptr) || (i2cAddress >= R4A_I2C_ADDRESSES))
+        return false;
     if (!i2cBus->_enumerated)
         r4aI2cBusEnumerate(i2cBus, nullptr);
     return i2cBus->_present[i2cAddress / 8] & (1 << (i2cAddress & 7));
