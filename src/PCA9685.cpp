@@ -94,6 +94,8 @@ R4A_PCA9685::R4A_PCA9685(R4A_I2C_BUS * i2cBus,
     memset(_channelRegs, 0, sizeof(_channelRegs));
     memset(_max, 0, sizeof(_max));
     memset(_min, 0, sizeof(_min));
+    _writeBufferLength = 0;
+    _writeBuffer = nullptr;
 }
 
 //*********************************************************************
@@ -510,8 +512,6 @@ bool R4A_PCA9685::readRegisters(uint8_t firstRegisterAddress,
                        _i2cAddress,
                        &firstRegisterAddress,
                        sizeof(firstRegisterAddress),
-                       nullptr,
-                       0,
                        display) == false)
     {
         if (display)
@@ -523,12 +523,9 @@ bool R4A_PCA9685::readRegisters(uint8_t firstRegisterAddress,
     // Read the data from the PCA9685
     if (r4aI2cBusRead(_i2cBus,
                       _i2cAddress,
-                      nullptr,
-                      0,
                       dataBuffer,
                       dataByteCount,
-                      display,
-                      true) == false)
+                      display) == false)
     {
         if (display)
             display->printf("ERROR: Failed to read the data from 0x%02x\r\n",
@@ -680,8 +677,9 @@ bool R4A_PCA9685::writeBufferedRegisters(Print * display)
 {
     int channel;
     int channelCount;
+    uint8_t data[1 + (4 * R4A_PCA9685_CHANNEL_COUNT)];
     int firstChannel;
-    uint8_t firstRegisterAddress;
+    size_t length;
     bool success;
 
     // Fast exit if no channels are modified
@@ -705,19 +703,21 @@ bool R4A_PCA9685::writeBufferedRegisters(Print * display)
             // Determine the number of sequential channels modified
             channelCount = channel - firstChannel;
 
+            // Get the address and channel data into a single buffer
+            data[0] = CHAN_TO_REG_ADDR(firstChannel);
+            length = channelCount << 2;
+            memcpy(&data[1], &_channelRegs[firstChannel << 2], length);
+
             // Display the transaction for debugging
-            firstRegisterAddress = CHAN_TO_REG_ADDR(firstChannel);
             if (display)
                 display->printf("PCA9685 0x%02x <-- %d bytes\r\n",
-                                firstRegisterAddress, channelCount << 2);
+                                data[0], length);
 
             // Write the PCA9685 registers
             success &= r4aI2cBusWrite(_i2cBus,
                                       _i2cAddress,
-                                      &firstRegisterAddress,
-                                      sizeof(firstRegisterAddress),
-                                      &_channelRegs[firstChannel << 2],
-                                      channelCount << 2,
+                                      data,
+                                      1 + length,
                                       display);
         }
     }
@@ -732,16 +732,38 @@ bool R4A_PCA9685::writeRegisters(uint8_t firstRegisterAddress,
                                  size_t dataByteCount,
                                  Print * display)
 {
+    // Allocate the write buffer if necessary
+    if ((_writeBuffer == nullptr) || (_writeBufferLength < (dataByteCount + 1)))
+    {
+        // Release the previous buffer
+        if (_writeBuffer)
+            r4aFree(_writeBuffer, "PCA9685 write buffer");
+
+        // Allocate a new write buffer with space for the first register value
+        _writeBufferLength = (dataByteCount + 1 + 0xf) & ~0xf;
+        _writeBuffer = (uint8_t *)r4aMalloc(_writeBufferLength, "PCA9685 write buffer");
+
+        // Handle the allocation failure
+        if (_writeBuffer == nullptr)
+        {
+            _writeBufferLength = 0;
+            return false;
+        }
+    }
+
+    // Move the data into the write buffer
+    _writeBuffer[0] = firstRegisterAddress;
+    memcpy(&_writeBuffer[1], dataBuffer, dataByteCount);
+
     // Display the transaction for debugging
     if (display)
-        Serial.printf("PCA9685 0x%02x <-- %d bytes\r\n", firstRegisterAddress, dataByteCount);
+        display->printf("PCA9685 0x%02x <-- %d bytes\r\n",
+                        firstRegisterAddress, dataByteCount);
 
     // Write the PCA9685 registers
     return r4aI2cBusWrite(_i2cBus,
                           _i2cAddress,
-                          &firstRegisterAddress,
-                          sizeof(firstRegisterAddress),
-                          dataBuffer,
-                          dataByteCount,
+                          _writeBuffer,
+                          1 + dataByteCount,
                           display);
 }

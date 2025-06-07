@@ -63,8 +63,6 @@ bool r4aVk16k33Brightness(R4A_VK16K33 * vk16k33,
                              vk16k33->i2cAddress,
                              &cmd,
                              sizeof(cmd),
-                             nullptr,
-                             0,
                              display);
     if ((!success) && display)
         display->printf("ERROR: Failed to set VK16K33 brightness!\r\n");
@@ -184,8 +182,6 @@ bool r4aVk16k33DisplayOn(R4A_VK16K33 * vk16k33, Print * display)
                              vk16k33->i2cAddress,
                              &cmd,
                              sizeof(cmd),
-                             nullptr,
-                             0,
                              display);
     if (!success)
         Serial.printf("ERROR: Failed to turn on VK16K33 display!\r\n");
@@ -209,8 +205,6 @@ bool r4aVk16k33DisplayPixels(R4A_VK16K33 * vk16k33, Print * display)
         vk16k33->pixels[0] = R4A_VK16K33_CMD_DATA_ADDRESS | 0;
         success = r4aI2cBusWrite(vk16k33->i2cBus,
                                  vk16k33->i2cAddress,
-                                 nullptr,
-                                 0,
                                  vk16k33->pixels,
                                  sizeof(vk16k33->pixels),
                                  display);
@@ -238,8 +232,6 @@ bool r4aVk16k33On(R4A_VK16K33 * vk16k33, Print * display)
                              vk16k33->i2cAddress,
                              &cmd,
                              sizeof(cmd),
-                             nullptr,
-                             0,
                              display);
     if (!success)
         Serial.printf("ERROR: Failed to turn on VK16K33!\r\n");

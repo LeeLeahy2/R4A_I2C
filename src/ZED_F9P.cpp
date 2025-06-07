@@ -594,8 +594,6 @@ int R4A_ZED_F9P::pushRawData(uint8_t * buffer, int bytes, Print * display)
         // Write the bytes
         if (!r4aI2cBusWrite(_i2cBus,
                             _i2cAddress,
-                            nullptr,        // cmdBuffer
-                            0,              // cmdByteCount
                             buffer,         // dataBuffer
                             bytesToWrite,   // dataByteCount
                             display))
