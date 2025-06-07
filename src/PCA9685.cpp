@@ -500,29 +500,44 @@ bool R4A_PCA9685::ledOnOff(uint8_t channel,
 //*********************************************************************
 // Read one or more PCA9685 registers
 // Return the number of bytes read
-size_t R4A_PCA9685::readRegisters(uint8_t firstRegisterAddress,
-                                  uint8_t * dataBuffer,
-                                  size_t dataByteCount,
-                                  Print * display)
+bool R4A_PCA9685::readRegisters(uint8_t firstRegisterAddress,
+                                uint8_t * dataBuffer,
+                                size_t dataByteCount,
+                                Print * display)
 {
-    size_t bytesRead;
+    // Send the first register address to the PCA9685
+    if (r4aI2cBusWrite(_i2cBus,
+                       _i2cAddress,
+                       &firstRegisterAddress,
+                       sizeof(firstRegisterAddress),
+                       nullptr,
+                       0,
+                       display) == false)
+    {
+        if (display)
+            display->printf("ERROR: Failed to write the register address 0x%02x\r\n",
+                            firstRegisterAddress);
+        return false;
+    }
 
     // Read the data from the PCA9685
-    bytesRead = _i2cBus->_read(_i2cBus,
-                               _i2cAddress,
-                               &firstRegisterAddress,
-                               sizeof(firstRegisterAddress),
-                               dataBuffer,
-                               dataByteCount,
-                               display,
-                               true);
+    if (_i2cBus->_read(_i2cBus,
+                       _i2cAddress,
+                       nullptr,
+                       0,
+                       dataBuffer,
+                       dataByteCount,
+                       display,
+                       true) == false)
+    {
+        if (display)
+            display->printf("ERROR: Failed to read the data from 0x%02x\r\n",
+                            firstRegisterAddress);
+        return false;
+    }
 
-    // Display the final results
-    if (display)
-        Serial.printf("PCA9685 0x%02x --> %d bytes\r\n", firstRegisterAddress, bytesRead);
-
-    // Return the number of bytes read
-    return bytesRead;
+    // Successful
+    return true;
 }
 
 //*********************************************************************

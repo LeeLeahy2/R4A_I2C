@@ -257,25 +257,25 @@ void r4aI2cMenuRead(const R4A_MENU_ENTRY * menuEntry,
                     const char * command,
                     Print * display)
 {
-    int bytesRead;
     uint8_t data;
     R4A_I2C_ADDRESS_t i2cAddress;
     uint8_t i2cRegister;
+    bool status;
     int values;
 
     // Parse the command line
     if (r4aI2cMenuGetAddressRegister(menuEntry,
                                      command, &values, &i2cAddress, &i2cRegister))
     {
-        bytesRead = r4aI2cBus->_read(r4aI2cBus,
-                                     i2cAddress,
-                                     (values == 2) ? &i2cRegister : nullptr,
-                                     (values == 2) ? sizeof(i2cRegister) : 0,
-                                     &data,
-                                     sizeof(data),
-                                     nullptr,
-                                     true);       // End of transaction
-        if (bytesRead != sizeof(data))
+        status = r4aI2cBus->_read(r4aI2cBus,
+                                  i2cAddress,
+                                  (values == 2) ? &i2cRegister : nullptr,
+                                  (values == 2) ? sizeof(i2cRegister) : 0,
+                                  &data,
+                                  sizeof(data),
+                                  nullptr,
+                                  true);       // End of transaction
+        if (status == false)
             display->println("Failed to read register!");
         else if (values == 1)
             display->printf("0x%03x: 0x%02x (%d)\r\n",

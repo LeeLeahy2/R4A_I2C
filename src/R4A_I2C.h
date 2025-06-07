@@ -64,15 +64,15 @@ typedef struct _R4A_I2C_DEVICE_DESCRIPTION
 //   display: Device used for debug output
 //   releaseI2cBus: A value of true releases the I2C bus after the transaction
 // Outputs:
-//   Returns the number of bytes read
-typedef size_t (* R4A_I2C_BUS_READ)(struct _R4A_I2C_BUS * i2cBus,
-                                    R4A_I2C_ADDRESS_t i2cAddress,
-                                    const uint8_t * cmdBuffer, // Does not include I2C address
-                                    size_t cmdByteCount,
-                                    uint8_t * readBuffer,
-                                    size_t readByteCount,
-                                    Print * display,
-                                    bool releaseI2cBus);
+//   Returns true upon success, false otherwise
+typedef bool (* R4A_I2C_BUS_READ)(struct _R4A_I2C_BUS * i2cBus,
+                                  R4A_I2C_ADDRESS_t i2cAddress,
+                                  const uint8_t * cmdBuffer, // Does not include I2C address
+                                  size_t cmdByteCount,
+                                  uint8_t * readBuffer,
+                                  size_t readByteCount,
+                                  Print * display,
+                                  bool releaseI2cBus);
 
 // Send data to an I2C peripheral, entered with the I2C bus lock held
 // Inputs:
@@ -350,11 +350,11 @@ public:
     //   dataByteCount: Number of bytes to read from the PA9685 device
     //   display: Device used for debug output, may be nullptr
     // Outputs:
-    //   Returns the number of bytes read
-    size_t readRegisters(uint8_t firstRegisterAddress,
-                         uint8_t * dataBuffer,
-                         size_t dataByteCount,
-                         Print * display = nullptr);
+    //   Returns true if the read was successful and false upon failure
+    bool readRegisters(uint8_t firstRegisterAddress,
+                       uint8_t * dataBuffer,
+                       size_t dataByteCount,
+                       Print * display = nullptr);
 
     // Convert from degrees (0 - 180) to onTime for servo positioning
     // Inputs:

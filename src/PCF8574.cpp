@@ -28,15 +28,14 @@ R4A_PCF8574::~R4A_PCF8574()
 // Returns true if the data byte was read successfully and false otherwise
 bool R4A_PCF8574::read(uint8_t *data)
 {
-    return (_i2cBus->_read(_i2cBus,
-                           _i2cAddress,
-                           nullptr,
-                           0,
-                           data,
-                           sizeof(*data),
-                           nullptr,
-                           true)
-        == sizeof(*data));
+    return _i2cBus->_read(_i2cBus,
+                          _i2cAddress,
+                          nullptr,
+                          0,
+                          data,
+                          sizeof(*data),
+                          nullptr,
+                          true);
 }
 
 //*********************************************************************
