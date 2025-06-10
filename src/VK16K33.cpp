@@ -41,8 +41,6 @@
 #define R4A_VK16K33_CDB_15_16           14  // 15 / 16
 #define R4A_VK16K33_CDB_16_16           15  // 16 / 16
 
-#define R4A_VK16K33_PIXEL_OFFSET        1   // Leave room for the command
-
 //*********************************************************************
 // Set the brightness (0-15)
 bool r4aVk16k33Brightness(R4A_VK16K33 * vk16k33,
@@ -69,9 +67,16 @@ bool r4aVk16k33Brightness(R4A_VK16K33 * vk16k33,
 
 //*********************************************************************
 // Clear the RAM buffer
-void r4aVk16k33ClearBuffer(R4A_VK16K33 * vk16k33)
+void r4aVk16k33BufferClear(R4A_VK16K33 * vk16k33)
 {
-    memset(vk16k33->pixels, 0, R4A_VK16K33_MAX_COLUMNS);
+    memset(&vk16k33->pixels[R4A_VK16K33_PIXEL_OFFSET], 0, R4A_VK16K33_MAX_COLUMNS);
+}
+
+//*********************************************************************
+// Fill the RAM buffer
+void r4aVk16k33BufferFill(R4A_VK16K33 * vk16k33, uint8_t data)
+{
+    memset(&vk16k33->pixels[R4A_VK16K33_PIXEL_OFFSET], data, R4A_VK16K33_MAX_COLUMNS);
 }
 
 //*********************************************************************
@@ -239,7 +244,7 @@ bool r4aVk16k33Setup(R4A_VK16K33 * vk16k33, Print * display)
             break;
 
         // Clear the display buffer
-        r4aVk16k33ClearBuffer(vk16k33);
+        r4aVk16k33BufferClear(vk16k33);
         success = r4aVk16k33DisplayPixels(vk16k33, display);
         if (!success)
             break;

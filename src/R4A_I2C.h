@@ -869,6 +869,7 @@ public:
 
 #define R4A_VK16K33_MAX_COLUMNS         16
 #define R4A_VK16K33_MAX_ROWS            8
+#define R4A_VK16K33_PIXEL_OFFSET        1   // Leave room for the command
 
 typedef struct _R4A_VK16K33
 {
@@ -877,7 +878,7 @@ typedef struct _R4A_VK16K33
     uint8_t columns;
     uint8_t rows;
     uint8_t brightness;
-    uint8_t pixels[1 + R4A_VK16K33_MAX_COLUMNS];
+    uint8_t pixels[R4A_VK16K33_PIXEL_OFFSET + R4A_VK16K33_MAX_COLUMNS];
 } R4A_VK16K33;
 
 // Set the brightness (0-15)
@@ -894,7 +895,13 @@ bool r4aVk16k33Brightness(R4A_VK16K33 * vk16k33,
 // Clear the RAM buffer
 // Inputs:
 //   vk16k33: Address of a R4A_VK16K33 data structure
-void r4aVk16k33ClearBuffer(R4A_VK16K33 * vk16k33);
+void r4aVk16k33BufferClear(R4A_VK16K33 * vk16k33);
+
+// Fill the RAM buffer
+// Inputs:
+//   vk16k33: Address of a R4A_VK16K33 data structure
+//   data: Value to place in each of the columns
+void r4aVk16k33BufferFill(R4A_VK16K33 * vk16k33, uint8_t data);
 
 // Turn on the display, start the scanning of the LEDs
 // Inputs:
