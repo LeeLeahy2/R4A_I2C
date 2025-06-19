@@ -156,6 +156,19 @@ void r4aVk16k33DisplayChar(R4A_VK16K33 * vk16k33, int xColumn, char data)
 }
 
 //*********************************************************************
+// Display "Halt" on the LED matrix
+void r4aVk16k33DisplayHalt(R4A_VK16K33 * vk16k33)
+{
+    r4aVk16k33BufferClear(vk16k33);
+    r4aVk16k33DisplayChar(vk16k33, 0, 'H');
+    r4aVk16k33DisplayChar(vk16k33, 5, 'a');
+    r4aVk16k33DisplayChar(vk16k33, 10, 'l');
+    r4aVk16k33DisplayChar(vk16k33, 11, 't');
+    r4aVk16k33DisplayPixels(vk16k33);
+    r4aVk16k33DisplayOn(vk16k33);
+}
+
+//*********************************************************************
 // Turn on the display
 bool r4aVk16k33DisplayOn(R4A_VK16K33 * vk16k33, Print * display)
 {

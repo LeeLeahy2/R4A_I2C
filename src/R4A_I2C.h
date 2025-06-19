@@ -920,6 +920,11 @@ void r4aVk16k33BufferFill(R4A_VK16K33 * vk16k33, uint8_t data);
 //   data: Character to write into the column
 void r4aVk16k33DisplayChar(R4A_VK16K33 * vk16k33, int xColumn, char data);
 
+// Display "Halt" on the LED matrix
+// Inputs:
+//   vk16k33: Address of a R4A_VK16K33 data structure
+void r4aVk16k33DisplayHalt(R4A_VK16K33 * vk16k33);
+
 // Turn on the display, start the scanning of the LEDs
 // Inputs:
 //   vk16k33: Address of a R4A_VK16K33 data structure
