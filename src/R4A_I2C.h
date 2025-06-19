@@ -875,6 +875,7 @@ typedef struct _R4A_VK16K33
 {
     R4A_I2C_BUS * i2cBus;
     uint8_t i2cAddress;
+    const uint8_t * const columnMap;
     uint8_t columns;
     uint8_t rows;
     uint8_t brightness;
