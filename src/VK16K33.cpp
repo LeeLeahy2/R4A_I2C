@@ -41,6 +41,12 @@
 #define R4A_VK16K33_CDB_15_16           14  // 15 / 16
 #define R4A_VK16K33_CDB_16_16           15  // 16 / 16
 
+//****************************************
+// Locals
+//****************************************
+
+bool r4aVk16k33WriteColumnFast; // Rows in the correct order
+
 //*********************************************************************
 // Set the brightness (0-15)
 bool r4aVk16k33Brightness(R4A_VK16K33 * vk16k33,
@@ -218,6 +224,7 @@ bool r4aVk16k33PixelSet(R4A_VK16K33 * vk16k33, uint8_t column, uint8_t row)
 bool r4aVk16k33Setup(R4A_VK16K33 * vk16k33, Print * display)
 {
     uint8_t cmd;
+    int row;
     bool success = false;
 
     do
@@ -237,6 +244,14 @@ bool r4aVk16k33Setup(R4A_VK16K33 * vk16k33, Print * display)
                                 R4A_VK16K33_MAX_ROWS);
             break;
         }
+
+        // Verify the order of the rows
+        r4aVk16k33WriteColumnFast = false;
+        for (row = 0; row < R4A_VK16K33_MAX_ROWS; row++)
+            if (vk16k33->rowMap[row] != row)
+                break;
+        if (row == R4A_VK16K33_MAX_ROWS)
+            r4aVk16k33WriteColumnFast = true;
 
         // Turn on the controller
         success = r4aVk16k33On(vk16k33, display);
@@ -276,6 +291,18 @@ bool r4aVk16k33WriteColumn(R4A_VK16K33 * vk16k33, uint8_t column, uint8_t data)
     }
 
     // Set the pixels
-    vk16k33->pixels[R4A_VK16K33_PIXEL_OFFSET + column] = data;
+    if (r4aVk16k33WriteColumnFast)
+        vk16k33->pixels[R4A_VK16K33_PIXEL_OFFSET + column] = data;
+    else
+    {
+        for (int row = 0; row < R4A_VK16K33_MAX_ROWS; row++)
+        {
+            int pixel = data & (1 << row);
+            if (pixel)
+                r4aVk16k33PixelSet(vk16k33, column, vk16k33->rowMap[row]);
+            else
+                r4aVk16k33PixelClear(vk16k33, column, vk16k33->rowMap[row]);
+        }
+    }
     return true;
 }
