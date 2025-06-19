@@ -881,6 +881,14 @@ typedef struct _R4A_VK16K33
     uint8_t pixels[R4A_VK16K33_PIXEL_OFFSET + R4A_VK16K33_MAX_COLUMNS];
 } R4A_VK16K33;
 
+// Fonts
+extern const uint8_t * r4a5x7Numbers[];
+extern const uint8_t * r4a5x7UcAtoH[];
+extern const uint8_t * r4a5x7LcAtoH[];
+extern const uint8_t r4a5x7Font_dp;
+extern const uint8_t r4a5x7Font_l;
+extern const uint8_t r4a5x7Font_t[5];
+
 // Set the brightness (0-15)
 // Inputs:
 //   vk16k33: Address of a R4A_VK16K33 data structure
