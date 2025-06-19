@@ -86,6 +86,76 @@ void r4aVk16k33BufferFill(R4A_VK16K33 * vk16k33, uint8_t data)
 }
 
 //*********************************************************************
+// Display a character on the LED matrix
+void r4aVk16k33DisplayChar(R4A_VK16K33 * vk16k33, int xColumn, char data)
+{
+    int columnCount;
+    const uint8_t * font;
+
+    // Get the font data
+    font = nullptr;
+    columnCount = 5;
+    switch (data)
+    {
+    default:
+        break;
+    case '.':
+        columnCount = 1;
+        font = &r4a5x7Font_dp;
+        break;
+
+    case '0':
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+    case '9':
+        font = r4a5x7Numbers[data - '0'];
+        break;
+
+    case 'A':
+    case 'B':
+    case 'C':
+    case 'D':
+    case 'E':
+    case 'F':
+    case 'G':
+    case 'H':
+        font = r4a5x7UcAtoH[data - 'A'];
+        break;
+
+    case 'a':
+    case 'b':
+    case 'c':
+    case 'd':
+    case 'e':
+    case 'f':
+    case 'g':
+    case 'h':
+        font = r4a5x7LcAtoH[data - 'a'];
+        break;
+
+    case 'l':
+        columnCount = 1;
+        font = &r4a5x7Font_l;
+        break;
+
+    case 't':
+        font = r4a5x7Font_t;
+        break;
+    }
+
+    // Set the pixels in the columns
+    if (font)
+        for (int column = xColumn; column < (xColumn + columnCount); column++)
+            r4aVk16k33WriteColumn(vk16k33, vk16k33->columnMap[column], *font++);
+}
+
+//*********************************************************************
 // Turn on the display
 bool r4aVk16k33DisplayOn(R4A_VK16K33 * vk16k33, Print * display)
 {
