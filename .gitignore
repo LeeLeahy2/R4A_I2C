@@ -1,2 +1,2 @@
 # Ignore directories
-a
+examples/*/build
