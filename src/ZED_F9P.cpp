@@ -55,7 +55,6 @@ R4A_ZED_F9P::R4A_ZED_F9P(R4A_I2C_BUS * i2cBus, R4A_I2C_ADDRESS_t i2cAddress)
       _hour{0},
       _hpDataAvailable{false},
       _i2cAddress{i2cAddress},
-      _i2cBus{i2cBus},
       _i2cTransactionSize{128},
       _latitude{0},
       _latitudeArray{nullptr},
@@ -96,7 +95,6 @@ R4A_ZED_F9P::~R4A_ZED_F9P()
         r4aFree((void *)_horizontalAccuracyArray, "ZED horizontal accuracy array (_horizontalAccuracyArray)");
         _horizontalAccuracyArray = nullptr;
     }
-    _i2cBus = nullptr;
     if (_latitudeArray)
     {
         r4aFree((void *)_latitudeArray, "ZED latitude array (_latitudeArray)");
@@ -574,6 +572,34 @@ void R4A_ZED_F9P::displayLocation(const char * comment,
 void R4A_ZED_F9P::i2cPoll()
 {
     _gnss.checkUblox(); // Check for the arrival of new data and process it.
+}
+
+//*********************************************************************
+// Push the RTCM data to the GNSS using I2C
+int R4A_ZED_F9P::pushRawData(uint8_t * buffer, int bytes)
+{
+
+    // I2C: split the data up into packets of i2cTransactionSize
+    size_t bytesWrittenTotal = 0;
+    while (bytes > 0)
+    {
+        // Limit bytesToWrite to i2cTransactionSize
+        size_t bytesToWrite = bytes;
+        if (bytesToWrite > _i2cTransactionSize)
+            bytesToWrite = _i2cTransactionSize;
+
+        // Write the bytes
+        if (_gnss.pushRawData(buffer, bytesToWrite) != bytesToWrite)
+        {
+            break;
+        }
+
+        // Account for the data written
+        buffer += bytesToWrite;
+        bytes -= bytesToWrite;
+        bytesWrittenTotal += bytesToWrite;
+    }
+    return bytesWrittenTotal;
 }
 
 //*********************************************************************

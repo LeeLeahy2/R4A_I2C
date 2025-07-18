@@ -1164,7 +1164,6 @@ class R4A_ZED_F9P
     double _horizontalMean;
     double _horizontalStdDev;
     const R4A_I2C_ADDRESS_t _i2cAddress;
-    R4A_I2C_BUS * _i2cBus;
     double _latitudeMean;
     double _latitudeStdDev;
     double _longitudeMean;
@@ -1347,6 +1346,12 @@ class R4A_ZED_F9P
 
     // Poll the GNSS using I2C
     void i2cPoll();
+
+    // Push the RTCM data to the GNSS using I2C
+    // Inputs:
+    //   buffer: Address of data to send to the GNSS receiver
+    //   bytes: Number of bytes to send to the GNSS receiver
+    int pushRawData(uint8_t * buffer, int bytes);
 
     // Store horizontal position data
     // Inputs:
