@@ -47,7 +47,7 @@ R4A_ZED_F9P::R4A_ZED_F9P(R4A_I2C_BUS * i2cBus, R4A_I2C_ADDRESS_t i2cAddress)
       _displayParameter{0},
       _fixType{0},
       _fullyResolved{false},
-      _gnss{SFE_UBLOX_GNSS()},
+      _gnss{R4A_UBLOX_I2C_GNSS(i2cBus, i2cAddress)},
       _horizontalAccuracy{0},
       _horizontalAccuracyArray{nullptr},
       _horizontalMean{0},
@@ -75,7 +75,6 @@ R4A_ZED_F9P::R4A_ZED_F9P(R4A_I2C_BUS * i2cBus, R4A_I2C_ADDRESS_t i2cAddress)
       _satellitesInView{0},
       _second{0},
       _tAcc{0},
-      _twoWire{r4aI2cBusGetTwoWire(_i2cBus)},
       _unitsFeetInches{false},
       _validDate{false},
       _validTime{false},
@@ -123,7 +122,7 @@ bool R4A_ZED_F9P::begin(Print * display)
     _online = false;
     for (index = 5; index > 0; index--)
     {
-        if (_gnss.begin(*_twoWire, _i2cAddress))
+        if (_gnss.begin())
             break;
         delay(100);
     }
@@ -575,38 +574,6 @@ void R4A_ZED_F9P::displayLocation(const char * comment,
 void R4A_ZED_F9P::i2cPoll()
 {
     _gnss.checkUblox(); // Check for the arrival of new data and process it.
-}
-
-//*********************************************************************
-// Push the RTCM data to the GNSS using I2C
-int R4A_ZED_F9P::pushRawData(uint8_t * buffer, int bytes, Print * display)
-{
-
-    // I2C: split the data up into packets of i2cTransactionSize
-    size_t bytesWrittenTotal = 0;
-    while (bytes > 0)
-    {
-        // Limit bytesToWrite to i2cTransactionSize
-        size_t bytesToWrite = bytes;
-        if (bytesToWrite > _i2cTransactionSize)
-            bytesToWrite = _i2cTransactionSize;
-
-        // Write the bytes
-        if (!r4aI2cBusWrite(_i2cBus,
-                            _i2cAddress,
-                            buffer,         // dataBuffer
-                            bytesToWrite,   // dataByteCount
-                            display))
-        {
-            break;
-        }
-
-        // Account for the data written
-        buffer += bytesToWrite;
-        bytes -= bytesToWrite;
-        bytesWrittenTotal += bytesToWrite;
-    }
-    return bytesWrittenTotal;
 }
 
 //*********************************************************************

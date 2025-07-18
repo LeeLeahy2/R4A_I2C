@@ -985,6 +985,79 @@ typedef void (* R4A_DISPLAY_ROUTINE)(intptr_t parameter,
                                      uint8_t satellitesInView,
                                      Print * display);
 
+// Define the I2C driver for UBLOX GNSS devices
+class R4A_UBLOX_I2C : public SparkFun_UBLOX_GNSS::GNSSDeviceBus
+{
+private:
+    R4A_I2C_BUS *_i2cBus;
+    R4A_I2C_ADDRESS_t _i2cAddress;
+
+public:
+    // Constructor
+    // Inputs:
+    //   i2cBus: Address of an initialized R4A_I2C_BUS object
+    //   i2cAddress: Address of the GNSS device on the I2C bus
+    R4A_UBLOX_I2C(R4A_I2C_BUS * i2cBus, R4A_I2C_ADDRESS_t i2cAddress);
+
+    // Checks how many bytes are waiting in the GNSS's I2C buffer
+    // Outputs:
+    //   Number of bytes in the GNSS device waiting to be read
+    uint16_t available();
+
+    // Is the GNSS device connected to the I2C bus?
+    bool ping();
+
+    // Read data from the GNSS device
+    // Inputs:
+    //   data: Address of the buffer to receive the data
+    //   length: Number of bytes to read
+    // Outputs:
+    //   Returns the number of bytes read or zero upon failure
+    uint8_t readBytes(uint8_t *data, uint8_t length);
+
+    // Read data from the GNSS device
+    // Inputs:
+    //   data: Address of the buffer containing the data to write
+    //   length: Number of bytes to write
+    // Outputs:
+    //   Returns the number of bytes written or zero upon failure
+    uint8_t writeBytes(uint8_t *data, uint8_t length);
+
+    // Unused functions required by the GNSSDeviceBus class
+    void startWriteReadByte();
+    uint8_t writeReadBytes(const uint8_t *data, uint8_t *readData, uint8_t length);
+    void writeReadByte(const uint8_t *data, uint8_t *readData);
+    void writeReadByte(const uint8_t data, uint8_t *readData);
+    void endWriteReadByte();
+};
+
+// Connect the UBLOX GNSS device to the UBLOX I2C driver
+class R4A_UBLOX_I2C_GNSS : public DevUBLOXGNSS
+{
+private:
+    // I2C bus class
+    R4A_UBLOX_I2C _ubloxI2cBus;
+
+public:
+    // Constructor
+    // Inputs:
+    //   i2cBus: Address of an initialized R4A_I2C_BUS object
+    //   i2cAddress: Address of the GNSS device on the I2C bus
+    R4A_UBLOX_I2C_GNSS(R4A_I2C_BUS * i2cBus,
+                       R4A_I2C_ADDRESS_t i2cAddress = kUBLOXGNSSDefaultAddress);
+
+    // This method is called to initialize the SFE_UBLOX_GNSS library.  This
+    // method must be called before calling any other method that interacts
+    // with the device.
+    // Inputs:
+    //   maxWait:
+    //   assumeSuccess:
+    // Outputs:
+    //   Returns true if successful and false upon failure
+    bool begin(uint16_t maxWait = kUBLOXGNSSDefaultMaxWait,
+               bool assumeSuccess = false);
+};
+
 class R4A_ZED_F9P
 {
   private:
@@ -993,7 +1066,7 @@ class R4A_ZED_F9P
     double _altitudeStdDev;
     const char * _comment;
     Print * _display;
-    SFE_UBLOX_GNSS _gnss;
+    R4A_UBLOX_I2C_GNSS _gnss;
     double _horizontalMean;
     double _horizontalStdDev;
     const R4A_I2C_ADDRESS_t _i2cAddress;
@@ -1002,7 +1075,6 @@ class R4A_ZED_F9P
     double _latitudeStdDev;
     double _longitudeMean;
     double _longitudeStdDev;
-    TwoWire * _twoWire;
 
     // Start collecting data for a point
     // Inputs:
@@ -1181,13 +1253,6 @@ class R4A_ZED_F9P
 
     // Poll the GNSS using I2C
     void i2cPoll();
-
-    // Push the RTCM data to the GNSS using I2C
-    // Inputs:
-    //   buffer: Address of data to send to the GNSS receiver
-    //   bytes: Number of bytes to send to the GNSS receiver
-    //   display: Device used for output
-    int pushRawData(uint8_t * buffer, int bytes, Print * display);
 
     // Store horizontal position data
     // Inputs:
