@@ -9,7 +9,6 @@
 #define __R4A_I2C_H__
 
 #include <Arduino.h>            // Built-in
-#include <Wire.h>               // Built-in
 
 #include <R4A_Robot.h>          // Robots-For-All robot support
 #include <R4A_SX1509.h>         // Robots-For-All SX1509 support
@@ -31,7 +30,9 @@ const uint8_t R4A_I2C_SWRST = 0x06;
 #define R4A_I2C_FAST_MODE_PLUS_HZ       (1 * 1000 * 1000)   // 1.0 MHz
 #define R4A_I2C_HIGH_SPEED_MODE_HZ      (34 * 100 * 1000)   // 3.4 MHz
 
-#define R4A_I2C_ADDRESSES       128     // Total addresses available on the I2C bus
+#define R4A_I2C_ADDRESSES_8_BIT      128    // Total 7-bit addresses available on the I2C bus
+#define R4A_I2C_ADDRESSES_10_BIT    1024    // Total 10-bit addresses available on the I2C bus
+#define R4A_I2C_ADDRESSES       R4A_I2C_ADDRESSES_10_BIT
 
 //****************************************
 // Forward data structures
@@ -71,6 +72,13 @@ extern R4A_I2C_BUS * r4aI2cBus; // I2C bus used in menus
 //   display: Device used for output
 void r4aI2cBusEnumerate(R4A_I2C_BUS * i2cBus,
                         Print * display = &Serial);
+
+// Enumerate the 10-bit I2C bus
+// Inputs:
+//   i2cBus: Address of a R4A_I2C_BUS data structure
+//   display: Device used for output
+void r4aI2cBusEnumerate10Bit(R4A_I2C_BUS * i2cBus,
+                             Print * display = &Serial);
 
 // Ping an I2C device to see if it responds
 // Inputs:

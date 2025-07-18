@@ -19,7 +19,77 @@ void r4aI2cBusEnumerate(R4A_I2C_BUS * i2cBus, Print * display)
 
     // Walk all of the I2C addresses
     deviceFound = false;
-    for (R4A_I2C_ADDRESS_t addr = 0; addr < R4A_I2C_ADDRESSES; addr++)
+    for (R4A_I2C_ADDRESS_t addr = 0; addr < R4A_I2C_ADDRESSES_8_BIT; addr++)
+    {
+        present = false;
+        timer = millis();
+        if (r4aI2cBusEnumerateDevice(i2cBus, addr))
+        {
+            present = true;
+            if (deviceFound == false)
+            {
+                if (display)
+                {
+                    display->println();
+                    display->println("I2C Devices:");
+                }
+                deviceFound = true;
+            }
+
+            // Look up the display name
+            for (index = 0; index < i2cBus->_deviceTableEntries; index++)
+                if (i2cBus->_deviceTable && (i2cBus->_deviceTable[index].i2cAddress == addr))
+                {
+                    deviceFound = true;
+                    break;
+                }
+
+            if (display)
+            {
+                if (index < i2cBus->_deviceTableEntries)
+                    display->printf("    0x%03x: %s\r\n", addr, i2cBus->_deviceTable[index].displayName);
+                else if (addr == 0)
+                    display->printf("    0x%03x: General Call\r\n", addr);
+                else
+                    display->printf("    0x%03x: ???\r\n", addr);
+            }
+        }
+        else if ((millis() - timer) > 50)
+        {
+            if (display)
+                display->println("ERROR: I2C bus not responding!");
+            return;
+        }
+
+        // Update the present bit
+        mask = 1 << (addr & 7);
+        if (present)
+            i2cBus->_present[addr / 8] |= mask;
+        else
+            i2cBus->_present[addr / 8] &= ~mask;
+    }
+
+    // Successful enumeration
+    i2cBus->_enumerated = true;
+
+    // Determine if any devices are on the bus
+    if ((!deviceFound) && display)
+        display->println("ERROR: No devices found on the I2C bus!");
+}
+
+//*********************************************************************
+// Enumerate the 10-bit I2C bus
+void r4aI2cBusEnumerate10Bit(R4A_I2C_BUS * i2cBus, Print * display)
+{
+    bool deviceFound;
+    int index;
+    uint8_t mask;
+    bool present;
+    uint32_t timer;
+
+    // Walk all of the I2C addresses
+    deviceFound = false;
+    for (R4A_I2C_ADDRESS_t addr = 0; addr < R4A_I2C_ADDRESSES_10_BIT; addr++)
     {
         present = false;
         timer = millis();
