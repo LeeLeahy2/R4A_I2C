@@ -105,8 +105,8 @@ bool r4aI2cBusIsDevicePresent(R4A_I2C_BUS * i2cBus,
 // Inputs:
 //   i2cBus: Address of a R4A_I2C_BUS data structure
 //   i2cAddress: Device address on the I2C bus
-//   dataBuffer: Address of the buffer to receive the data bytes, may be nullptr
-//   dataByteCount: Size in bytes of the data buffer, maximum receive bytes
+//   readBuffer: Address of the buffer to receive the data bytes, may be nullptr
+//   readByteCount: Size in bytes of the data buffer, maximum receive bytes
 //   display: Device used for debug output
 // Outputs:
 //   Returns true if successful and false upon failure
@@ -130,6 +130,28 @@ bool r4aI2cBusWrite(R4A_I2C_BUS * i2cBus,
                     const uint8_t * dataBuffer,
                     size_t dataByteCount,
                     Print * display = nullptr);
+
+// Send data, restart, read data from an I2C peripheral
+// Inputs:
+//   i2cBus: Address of a R4A_I2C_BUS data structure
+//   i2cAddress: Device address on the I2C bus
+//   dataBuffer: Address of the buffer containing the data bytes, may be nullptr
+//   dataByteCount: Number of bytes to send from the data buffer
+//   readBuffer: Address of the buffer to receive the data bytes, may be nullptr
+//   readByteCount: Size in bytes of the data buffer, maximum receive bytes
+//   bytesReadAddr: Address to receive the number of bytes read from the I2C device,
+//                  may be nullptr
+//   display: Device used for debug output
+// Outputs:
+//   Return true upon success and false upon failure
+bool r4aI2cBusWriteRead(R4A_I2C_BUS * i2cBus,
+                        R4A_I2C_ADDRESS_t i2cAddress,
+                        const uint8_t * dataBuffer,
+                        size_t dataByteCount,
+                        uint8_t * readBuffer,
+                        size_t readByteCount,
+                        size_t * bytesReadAddr,
+                        Print * display = nullptr);
 
 //****************************************
 // I2C menu API
