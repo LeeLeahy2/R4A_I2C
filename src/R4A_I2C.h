@@ -12,6 +12,7 @@
 #include <Wire.h>               // Built-in
 
 #include <R4A_Robot.h>          // Robots-For-All robot support
+#include <R4A_SX1509.h>         // Robots-For-All SX1509 support
 
 // External libraries
 #include <SparkFun_u-blox_GNSS_v3.h>    //Click here to get the library: http://librarymanager/All#SparkFun_u-blox_GNSS_v3
@@ -837,6 +838,77 @@ public:
     //   otherwise
     bool write(uint8_t data);
 };
+
+//****************************************
+// SX1509
+//****************************************
+
+typedef struct _R4A_SX1509
+{
+    R4A_I2C_BUS * _i2cBus;
+    R4A_I2C_ADDRESS_t _i2cAddress;
+} R4A_SX1509;
+
+// Display the SX1509 registers
+// Inputs:
+//   sx1509: Address of a R4A_SX1509 data structure
+//   display: Device used for output
+void r4aSx1509DisplayRegisters(R4A_SX1509 * sx1509,
+                               Print * display);
+
+// Display a SX1509 register
+// Inputs:
+//   sx1509: Address of a R4A_SX1509 data structure
+//   registerAddress: Register number to display
+//   registerName: Address of a zero terminated name string
+//   display: Device used for output
+void r4aSx1509RegisterDisplay(R4A_SX1509 * sx1509,
+                              uint8_t registerAddress,
+                              const char * registerName,
+                              Print * display = &Serial);
+
+// Modify a register's value
+//      Clear bit: Bit in andMask is zero, bit in xorMask is zero
+//      Set bit: Bit in andMask is zero, bit in xorMask is one
+//      No change: Bit in andMask is one, bit in xorMask is zero
+//      Toggle bit: Bit in andMask is one, bit in xorMask is one
+// Inputs:
+//   registerAddress: Address of the SX1509 register
+//   andMask: Bits keep from the register value
+//   xorMask: Bits to toggle in the register value
+// Outputs:
+//   Returns true upon success and false on failure
+bool r4aSx1509RegisterModify(R4A_SX1509 * sx1509,
+                             uint8_t registerAddress,
+                             uint8_t andMask,
+                             uint8_t xorMask,
+                             Print *display = nullptr);
+
+// Read a SX1509 register
+// Inputs:
+//   sx1509: Address of a R4A_SX1509 data structure
+//   registerAddress: Register number to read
+//   data: Address to receive the register value
+//   display: Device used for error output, may be nullptr
+// Outputs:
+//   Returns true up success and false upon failure
+bool r4aSx1509RegisterRead(R4A_SX1509 * sx1509,
+                           uint8_t registerAddress,
+                           uint8_t * data,
+                           Print * display = nullptr);
+
+// Write a SX1509 register
+// Inputs:
+//   sx1509: Address of a R4A_SX1509 data structure
+//   registerAddress: Register number to write
+//   data: Value to write to the register
+//   display: Device used for error output, may be nullptr
+// Outputs:
+//   Returns true up success and false upon failure
+bool r4aSx1509RegisterWrite(R4A_SX1509 * sx1509,
+                            uint8_t registerAddress,
+                            uint8_t data,
+                            Print * display);
 
 //****************************************
 // VK16K33
