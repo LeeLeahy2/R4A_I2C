@@ -203,29 +203,42 @@ void r4aI2cMenuRead(const R4A_MENU_ENTRY * menuEntry,
                                          &i2cRegister))
         {
             // Set the register address
-            if ((values == 2) && (r4aI2cBusWrite(r4aI2cBus,
-                                                i2cAddress,
-                                                &i2cRegister,
-                                                sizeof(i2cRegister),
-                                                display) == false))
-                break;
-
-            // Read the data byte
-            if (r4aI2cBusRead(r4aI2cBus,
-                              i2cAddress,
-                              &data,
-                              sizeof(data),
-                              display) == false)
-                display->println("Failed to read register!");
-            else if (values == 1)
-                display->printf("0x%03x: 0x%02x (%d)\r\n",
-                                i2cAddress,
-                                data, data);
-            else
+            if (values == 2)
+            {
+                if (r4aI2cBusWriteRead(r4aI2cBus,
+                                       i2cAddress,
+                                       &i2cRegister,
+                                       sizeof(i2cRegister),
+                                       &data,
+                                       sizeof(data),
+                                       nullptr,
+                                       display) == false)
+                {
+                    display->println("Failed to read register!");
+                    break;
+                }
                 display->printf("0x%03x[0x%02x]: 0x%02x (%d)\r\n",
                                 i2cAddress,
                                 i2cRegister,
                                 data, data);
+            }
+            else
+            {
+                // Read the data byte
+                if (r4aI2cBusRead(r4aI2cBus,
+                                  i2cAddress,
+                                  &data,
+                                  sizeof(data),
+                                  nullptr,
+                                  display) == false)
+                {
+                    display->println("Failed to read register!");
+                    break;
+                }
+                display->printf("0x%03x: 0x%02x (%d)\r\n",
+                                i2cAddress,
+                                data, data);
+            }
         }
         else if (values <= 0)
             display->printf("Please specify the I2C address (0 - 0x%03x) for aa",

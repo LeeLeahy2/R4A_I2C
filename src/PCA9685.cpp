@@ -525,6 +525,7 @@ bool R4A_PCA9685::readRegisters(uint8_t firstRegisterAddress,
                       _i2cAddress,
                       dataBuffer,
                       dataByteCount,
+                      nullptr,
                       display) == false)
     {
         if (display)

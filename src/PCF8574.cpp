@@ -31,8 +31,7 @@ bool R4A_PCF8574::read(uint8_t *data)
     return r4aI2cBusRead(_i2cBus,
                           _i2cAddress,
                           data,
-                          sizeof(*data),
-                          nullptr);
+                          sizeof(*data));
 }
 
 //*********************************************************************
@@ -43,6 +42,5 @@ bool R4A_PCF8574::write(uint8_t data)
     return r4aI2cBusWrite(_i2cBus,
                           _i2cAddress,
                           &data,
-                          sizeof(data),
-                          nullptr);
+                          sizeof(data));
 }
