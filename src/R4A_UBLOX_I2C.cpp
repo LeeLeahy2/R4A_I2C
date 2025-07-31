@@ -68,38 +68,28 @@ R4A_UBLOX_I2C::R4A_UBLOX_I2C(R4A_I2C_BUS * i2cBus,
 // Checks how many bytes are waiting in the GNSS's I2C buffer
 uint16_t R4A_UBLOX_I2C::available()
 {
-    TwoWire * twoWire;
+    uint8_t buffer[2];
+    uint16_t bytesAvailable;
+    uint8_t registerAddress;
 
     if (!_i2cBus)
         return false;
 
-    twoWire = r4aI2cBusGetTwoWire(_i2cBus);
-    if (!twoWire)
-        return false;
-
     // Get the number of bytes available from the module
-    uint16_t bytesAvailable = 0;
-    twoWire->beginTransmission(_i2cAddress);
-    twoWire->write(0xFD);                               // 0xFD (MSB) and 0xFE (LSB) are the registers that contain number of bytes available
-    uint8_t i2cError = twoWire->endTransmission(false); // Always send a restart command. Do not release the bus. ESP32 supports this.
-    if (i2cError != 0)
-    {
+    bytesAvailable = 0;
+    registerAddress = 0xfd;
+    if (r4aI2cBusWriteRead(_i2cBus,
+                           _i2cAddress,
+                           &registerAddress,
+                           sizeof(registerAddress),
+                           buffer,
+                           sizeof(buffer)) == false)
         return (0); // Sensor did not ACK
-    }
 
-    // Forcing requestFrom to use a restart would be unwise. If bytesAvailable is zero, we want to surrender the bus.
-    uint16_t bytesReturned = twoWire->requestFrom(_i2cAddress, static_cast<uint8_t>(2));
-    if (bytesReturned != 2)
-    {
-        return (0); // Sensor did not return 2 bytes
-    }
-    else // if (twoWire->available())
-    {
-        uint8_t msb = twoWire->read();
-        uint8_t lsb = twoWire->read();
-        bytesAvailable = (uint16_t)msb << 8 | lsb;
-    }
-    return (bytesAvailable);
+    uint8_t msb = buffer[0];
+    uint8_t lsb = buffer[1];
+    bytesAvailable = (uint16_t)msb << 8 | lsb;
+    return bytesAvailable;
 }
 
 //*********************************************************************
@@ -112,13 +102,7 @@ bool R4A_UBLOX_I2C::ping()
     if (!_i2cBus)
         return false;
 
-    present = false;
-    twoWire = r4aI2cBusGetTwoWire(_i2cBus);
-    if (twoWire)
-    {
-        twoWire->beginTransmission(_i2cAddress);
-        present = (twoWire->endTransmission() == 0);
-    }
+    present = r4aI2cBusEnumerateDevice(_i2cBus, _i2cAddress);
     return present;
 }
 
@@ -126,28 +110,12 @@ bool R4A_UBLOX_I2C::ping()
 // Read data from the GNSS device
 uint8_t R4A_UBLOX_I2C::readBytes(uint8_t *data, uint8_t length)
 {
-    uint8_t bytesReturned;
-    TwoWire * twoWire;
+    size_t bytesReturned;
 
-    do
-    {
-        bytesReturned = 0;
-        if (length == 0)
-            break;
-
-        if (!_i2cBus)
-            break;
-
-        twoWire = r4aI2cBusGetTwoWire(_i2cBus);
-        if (!twoWire)
-            break;
-
-        // Read the data from the GNSS device
-        bytesReturned = twoWire->requestFrom(_i2cAddress, length);
-        for (uint8_t i = 0; i < bytesReturned; i++)
-            *data++ = twoWire->read();
-    } while (0);
-    return bytesReturned;
+    bytesReturned = 0;
+    if (_i2cBus && length)
+        r4aI2cBusRead(_i2cBus, _i2cAddress, data, length, &bytesReturned);
+    return (uint8_t)bytesReturned;
 }
 
 //*********************************************************************
@@ -157,24 +125,11 @@ uint8_t R4A_UBLOX_I2C::writeBytes(uint8_t *data, uint8_t length)
     uint8_t bytesWritten;
     TwoWire * twoWire;
 
-    do
+    if (_i2cBus && length)
     {
-        if (length == 0)
-            break;
-
-        if (!_i2cBus)
-            break;
-
-        twoWire = r4aI2cBusGetTwoWire(_i2cBus);
-        if (!twoWire)
-            break;
-
-        // Write data to the GNSS device
-        twoWire->beginTransmission(_i2cAddress);
-        bytesWritten = twoWire->write((const uint8_t *)data, length);
-        if (twoWire->endTransmission() == 0)
-            return bytesWritten;
-    } while (0);
+        if (r4aI2cBusWrite(_i2cBus, _i2cAddress, data, length))
+            return length;
+    }
     return 0;
 }
 
