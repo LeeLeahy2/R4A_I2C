@@ -41,10 +41,24 @@
 #define R4A_VK16K33_CDB_15_16           14  // 15 / 16
 #define R4A_VK16K33_CDB_16_16           15  // 16 / 16
 
+// LED Matrix (VK16K33) menu
+const R4A_MENU_ENTRY r4aVk16k33MenuTable[] =
+{
+    // Command  menuRoutine     menuParam       HelpRoutine align   HelpText
+    {"c", r4aVk16k33MenuClear,  0,              nullptr,    0,      "Clear the LED matrix"},
+    {"d", r4aVk16k33MenuDate,   0,              nullptr,    0,      "Display the data"},
+    {"f", r4aVk16k33MenuFill,   0,              nullptr,    0,      "Fill the LED matrix"},
+    {"h", r4aVk16k33MenuHalt,   0,              nullptr,    0,      "Display Halt"},
+    {"t", r4aVk16k33MenuTime,   0,              nullptr,    0,      "Display the time"},
+    {"w", r4aVk16k33MenuWrite, (intptr_t)"ccc", nullptr,    3,      "Write up to 3 characters to the LED matrix"},
+    {"x",       nullptr,        R4A_MENU_MAIN,  nullptr,    0,      "Return to the main menu"},
+};
+
 //****************************************
 // Locals
 //****************************************
 
+R4A_VK16K33 * r4aVk16k33;
 bool r4aVk16k33WriteColumnFast; // Rows in the correct order
 
 //*********************************************************************
@@ -219,6 +233,132 @@ bool r4aVk16k33DisplayPixels(R4A_VK16K33 * vk16k33, Print * display)
 }
 
 //*********************************************************************
+// Turn off all pixels in the LED matrix
+void r4aVk16k33MenuClear(const R4A_MENU_ENTRY * menuEntry,
+                         const char * command,
+                         Print * display)
+{
+    // Clear the display
+    r4aVk16k33BufferClear(r4aVk16k33);
+    r4aVk16k33DisplayPixels(r4aVk16k33);
+}
+
+//*********************************************************************
+// Display the date on the LED matrix
+void r4aVk16k33MenuDate(const R4A_MENU_ENTRY * menuEntry,
+                        const char * command,
+                        Print * display)
+{
+    String localTime;
+
+    // Clear the display
+    r4aVk16k33BufferClear(r4aVk16k33);
+
+    // Determine if the time is valid
+    r4aNtpUpdate(WiFi.STA.connected());
+    if (r4aNtpIsTimeValid())
+    {
+        // Get the time
+        time_t seconds = r4aNtpGetEpochTime();
+        localTime = r4aNtpGetDate(seconds);
+        const char * date = localTime.c_str();
+
+        // Display the date     0123456789
+        //                      yyyy-mm-dd
+        date = &date[5];
+        if (date[5] == '1')
+            r4aVk16k33DisplayChar(r4aVk16k33, 0, 'l');
+        date++;
+        r4aVk16k33DisplayChar(r4aVk16k33, 1, *date++);
+        date++;
+        r4aVk16k33DisplayChar(r4aVk16k33, 6, *date++);
+        r4aVk16k33DisplayChar(r4aVk16k33, 11, *date++);
+    }
+
+    // Display the date
+    r4aVk16k33DisplayPixels(r4aVk16k33);
+}
+
+//*********************************************************************
+// Turn on all pixels in the LED matrix
+void r4aVk16k33MenuFill(const R4A_MENU_ENTRY * menuEntry,
+                        const char * command,
+                        Print * display)
+{
+    r4aVk16k33BufferFill(r4aVk16k33, 0xff);
+    r4aVk16k33DisplayPixels(r4aVk16k33);
+}
+
+//*********************************************************************
+// Display Halt on the LED matrix
+void r4aVk16k33MenuHalt(const R4A_MENU_ENTRY * menuEntry,
+                        const char * command,
+                        Print * display)
+{
+    r4aVk16k33DisplayHalt(r4aVk16k33);
+}
+
+// Display the current time on the LED matrix
+void r4aVk16k33MenuTime(const R4A_MENU_ENTRY * menuEntry,
+                        const char * command,
+                        Print * display)
+{
+    String localTime;
+
+    // Clear the display
+    r4aVk16k33BufferClear(r4aVk16k33);
+
+    // Determine if the time is valid
+    r4aNtpUpdate(WiFi.STA.connected());
+    if (r4aNtpIsTimeValid())
+    {
+        // Get the time         01234567
+        //                      hh:mm:ss
+        time_t seconds = r4aNtpGetEpochTime();
+        localTime = r4aNtpGetTime12(seconds);
+        const char * time = localTime.c_str();
+        if (*time == '1')
+            r4aVk16k33DisplayChar(r4aVk16k33, 0, 'l');
+        time++;
+        r4aVk16k33DisplayChar(r4aVk16k33, 1, *time++);
+        time++;
+        r4aVk16k33DisplayChar(r4aVk16k33, 6, *time++);
+        r4aVk16k33DisplayChar(r4aVk16k33, 11, *time++);
+    }
+
+    // Display the data
+    r4aVk16k33DisplayPixels(r4aVk16k33);
+}
+
+//*********************************************************************
+// Display up to 3 characters on the display
+void r4aVk16k33MenuWrite(const R4A_MENU_ENTRY * menuEntry,
+                         const char * command,
+                         Print * display)
+{
+    const char * data;
+    static String parameter;
+
+    // Locate the parameter
+    parameter = r4aMenuGetParameters(menuEntry, command);
+
+    // Clear the display
+    r4aVk16k33BufferClear(r4aVk16k33);
+
+    // Get the string
+    data = parameter.c_str();
+    if (*data)
+        r4aVk16k33DisplayChar(r4aVk16k33, 1, *data++);
+    if (*data)
+        r4aVk16k33DisplayChar(r4aVk16k33, 6, *data++);
+    if (*data)
+        r4aVk16k33DisplayChar(r4aVk16k33, 11, *data++);
+
+    // Display the data
+    r4aVk16k33DisplayPixels(r4aVk16k33);
+}
+
+//*********************************************************************
 // Turn on the VK16K33 LED controller
 bool r4aVk16k33On(R4A_VK16K33 * vk16k33, Print * display)
 {
@@ -349,6 +489,9 @@ bool r4aVk16k33Setup(R4A_VK16K33 * vk16k33, Print * display)
         success = r4aVk16k33Brightness(vk16k33, vk16k33->brightness, display);
         if (!success)
             break;
+
+        // Remember this LED matrix controller
+        r4aVk16k33 = vk16k33;
     } while (0);
     return success;
 }
