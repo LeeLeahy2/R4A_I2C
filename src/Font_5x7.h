@@ -199,6 +199,16 @@ const uint8_t r4a5x7Font_G[5] = {0x3e, 0x41, 0x41, 0x51, 0x32};
 //       0x80
 const uint8_t r4a5x7Font_H[5] = {0x7f, 0x08, 0x08, 0x08, 0x7f};
 //  01234
+//   *** 0x01
+//    *  0x02
+//    *  0x04
+//    *  0x08
+//    *  0x10
+//    *  0x20
+//   *** 0x40
+//       0x80
+const uint8_t r4a5x7Font_I[5] = {0x00, 0x41, 0x7f, 0x41, 0x00};
+//  01234
 //       0x01
 //       0x02
 //   *** 0x04
@@ -314,7 +324,7 @@ const uint8_t * r4a5x7Numbers[] =
     r4a5x7Font_9,   // 9
 };
 
-const uint8_t * r4a5x7UcAtoH[] =
+const uint8_t * r4a5x7UcAtoI[] =
 {
     r4a5x7Font_A,   // A
     r4a5x7Font_B,   // B
@@ -324,6 +334,7 @@ const uint8_t * r4a5x7UcAtoH[] =
     r4a5x7Font_F,   // F
     r4a5x7Font_G,   // G
     r4a5x7Font_H,   // H
+    r4a5x7Font_I,   // I
 };
 
 const uint8_t * r4a5x7LcAtoH[] =

@@ -137,7 +137,8 @@ void r4aVk16k33DisplayChar(R4A_VK16K33 * vk16k33, int xColumn, char data)
     case 'F':
     case 'G':
     case 'H':
-        font = r4a5x7UcAtoH[data - 'A'];
+    case 'I':
+        font = r4a5x7UcAtoI[data - 'A'];
         break;
 
     case 'a':

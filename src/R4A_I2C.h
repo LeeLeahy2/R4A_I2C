@@ -934,7 +934,7 @@ typedef struct _R4A_VK16K33
 
 // Fonts
 extern const uint8_t * r4a5x7Numbers[];
-extern const uint8_t * r4a5x7UcAtoH[];
+extern const uint8_t * r4a5x7UcAtoI[];
 extern const uint8_t * r4a5x7LcAtoH[];
 extern const uint8_t r4a5x7Font_dp;
 extern const uint8_t r4a5x7Font_l;
