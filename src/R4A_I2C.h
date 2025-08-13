@@ -914,7 +914,7 @@ bool r4aSx1509RegisterWrite(R4A_SX1509 * sx1509,
 
 // LED Matrix (VK16K33) menu
 extern const R4A_MENU_ENTRY r4aVk16k33MenuTable[];
-#define R4A_VK16K33_MENU_ENTRIES  7
+#define R4A_VK16K33_MENU_ENTRIES  8
 
 #define R4A_VK16K33_MAX_COLUMNS         16
 #define R4A_VK16K33_MAX_ROWS            8
@@ -974,6 +974,9 @@ void r4aVk16k33DisplayChar(R4A_VK16K33 * vk16k33, int xColumn, char data);
 //   vk16k33: Address of a R4A_VK16K33 data structure
 void r4aVk16k33DisplayHalt(R4A_VK16K33 * vk16k33);
 
+// Display "Idle" on the LED matrix
+void r4aVk16k33DisplayIdle(R4A_VK16K33 * vk16k33);
+
 // Turn on the display, start the scanning of the LEDs
 // Inputs:
 //   vk16k33: Address of a R4A_VK16K33 data structure
@@ -1018,6 +1021,15 @@ void r4aVk16k33MenuFill(const R4A_MENU_ENTRY * menuEntry,
 //   command: Zero terminated command string
 //   display: Device used for output
 void r4aVk16k33MenuHalt(const R4A_MENU_ENTRY * menuEntry,
+                        const char * command,
+                        Print * display);
+
+// Display Idle on the LED matrix
+// Inputs:
+//   menuEntry: Address of the object describing the menu entry
+//   command: Zero terminated command string
+//   display: Device used for output
+void r4aVk16k33MenuIdle(const R4A_MENU_ENTRY * menuEntry,
                         const char * command,
                         Print * display);
 

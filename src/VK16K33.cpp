@@ -49,6 +49,7 @@ const R4A_MENU_ENTRY r4aVk16k33MenuTable[] =
     {"d", r4aVk16k33MenuDate,   0,              nullptr,    0,      "Display the data"},
     {"f", r4aVk16k33MenuFill,   0,              nullptr,    0,      "Fill the LED matrix"},
     {"h", r4aVk16k33MenuHalt,   0,              nullptr,    0,      "Display Halt"},
+    {"i", r4aVk16k33MenuIdle,   0,              nullptr,    0,      "Display Idle"},
     {"t", r4aVk16k33MenuTime,   0,              nullptr,    0,      "Display the time"},
     {"w", r4aVk16k33MenuWrite, (intptr_t)"ccc", nullptr,    3,      "Write up to 3 characters to the LED matrix"},
     {"x",       nullptr,        R4A_MENU_MAIN,  nullptr,    0,      "Return to the main menu"},
@@ -182,6 +183,19 @@ void r4aVk16k33DisplayHalt(R4A_VK16K33 * vk16k33)
 }
 
 //*********************************************************************
+// Display "Idle" on the LED matrix
+void r4aVk16k33DisplayIdle(R4A_VK16K33 * vk16k33)
+{
+    r4aVk16k33BufferClear(vk16k33);
+    r4aVk16k33DisplayChar(vk16k33, 0, 'I');
+    r4aVk16k33DisplayChar(vk16k33, 5, 'd');
+    r4aVk16k33DisplayChar(vk16k33, 10, 'l');
+    r4aVk16k33DisplayChar(vk16k33, 11, 'e');
+    r4aVk16k33DisplayPixels(vk16k33);
+    r4aVk16k33DisplayOn(vk16k33);
+}
+
+//*********************************************************************
 // Turn on the display
 bool r4aVk16k33DisplayOn(R4A_VK16K33 * vk16k33, Print * display)
 {
@@ -299,6 +313,16 @@ void r4aVk16k33MenuHalt(const R4A_MENU_ENTRY * menuEntry,
     r4aVk16k33DisplayHalt(r4aVk16k33);
 }
 
+//*********************************************************************
+// Display Idle on the LED matrix
+void r4aVk16k33MenuIdle(const R4A_MENU_ENTRY * menuEntry,
+                        const char * command,
+                        Print * display)
+{
+    r4aVk16k33DisplayIdle(r4aVk16k33);
+}
+
+//*********************************************************************
 // Display the current time on the LED matrix
 void r4aVk16k33MenuTime(const R4A_MENU_ENTRY * menuEntry,
                         const char * command,
