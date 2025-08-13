@@ -89,18 +89,6 @@ void r4aI2cBusEnumerate10Bit(R4A_I2C_BUS * i2cBus,
 bool r4aI2cBusEnumerateDevice(R4A_I2C_BUS * i2cBus,
                               R4A_I2C_ADDRESS_t i2cAddress);
 
-// Get the TwoWire pointer
-//
-// Warning: Using the I2C bus outside of these routines will break the
-// I2C controller synchronization leading to hangs, crashes and unspecified
-// behavior!
-//
-// Inputs:
-//   i2cBus: Address of a R4A_I2C_BUS data structure
-// Outputs:
-//   Returns the TwoWire object address
-TwoWire * r4aI2cBusGetTwoWire(R4A_I2C_BUS * i2cBus);
-
 // Check if an I2C device was seen during the enumeration
 // Inputs:
 //   i2cBus: Address of a R4A_I2C_BUS data structure
