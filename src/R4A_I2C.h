@@ -45,6 +45,40 @@ typedef uint16_t R4A_I2C_ADDRESS_t; // 0 - 1023 (0x3ff), 10-bit address
 #endif
 
 //****************************************
+// Camera
+//****************************************
+
+typedef struct _R4A_CAMERA_PINS
+{
+    // Control pins
+    int _pinReset;
+    int _pinPowerDown;
+    int _pinXCLK;       // External clock input
+    int _pinStrobe;     // Flash control output
+
+    // Serial Camera Control Bus (SCCB/I2C) pins
+    int _pinSccbClk;
+    int _pinSccbData;
+
+    // Frame synchronization
+    int _pinVSYNC;  // High at beginning of frame
+    int _pinHREF;   // High during each horizontal line
+    int _pinPCLK;   // Pixel clock output
+
+    // Image data pins
+    int _pinY0;
+    int _pinY1;
+    int _pinY2;
+    int _pinY3;
+    int _pinY4;
+    int _pinY5;
+    int _pinY6;
+    int _pinY7;
+    int _pinY8;
+    int _pinY9;
+} R4A_CAMERA_PINS;
+
+//****************************************
 // Generic I2C Class
 //****************************************
 
