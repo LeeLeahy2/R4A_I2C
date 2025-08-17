@@ -78,6 +78,57 @@ typedef struct _R4A_CAMERA_PINS
     int _pinY9;
 } R4A_CAMERA_PINS;
 
+// Define the frame formats
+enum R4A_FRAME_SIZE_t
+{
+    R4A_FRAME_SIZE_40x30 = 0,   //   40 x   30
+    R4A_FRAME_SIZE_80x60,       //   80 x   60
+    R4A_FRAME_SIZE_96x96,       //   96 x   96
+    R4A_FRAME_SIZE_100x75,      //  100 x   75
+    R4A_FRAME_SIZE_128x128,     //  128 x  128
+    R4A_FRAME_SIZE_QQVGA,       //  160 x  120
+    R4A_FRAME_SIZE_QCIF,        //  176 x  144
+    R4A_FRAME_SIZE_200x150,     //  200 x  150
+    R4A_FRAME_SIZE_HQVGA,       //  240 x  176
+    R4A_FRAME_SIZE_240x240,     //  240 x  240
+    R4A_FRAME_SIZE_QVGA,        //  320 x  240
+    R4A_FRAME_SIZE_320x320,     //  320 x  320
+    R4A_FRAME_SIZE_CIF,         //  400 x  296
+    R4A_FRAME_SIZE_400x300,     //  400 x  300
+    R4A_FRAME_SIZE_HVGA,        //  480 x  320
+    R4A_FRAME_SIZE_VGA,         //  640 x  480
+    R4A_FRAME_SIZE_P_HD,        //  720 x 1280
+    R4A_FRAME_SIZE_SVGA,        //  800 x  600
+    R4A_FRAME_SIZE_P_3MP,       //  864 x 1536
+    R4A_FRAME_SIZE_XGA,         // 1024 x  768
+    R4A_FRAME_SIZE_P_FHD,       // 1080 x 1920
+    R4A_FRAME_SIZE_HD,          // 1280 x  720
+    R4A_FRAME_SIZE_SXGA,        // 1280 x 1024
+    R4A_FRAME_SIZE_UXGA,        // 1600 x 1200
+    R4A_FRAME_SIZE_FHD,         // 1920 x 1080
+    R4A_FRAME_SIZE_QXGA,        // 2048 x 1536
+    R4A_FRAME_SIZE_QHD,         // 2560 x 1440
+    R4A_FRAME_SIZE_WQXGA,       // 2560 x 1600
+    R4A_FRAME_SIZE_QSXGA,       // 2560 x 1920
+    R4A_FRAME_SIZE_5MP,         // 2592 x 1944
+    // Add new frame sizes above this line
+    R4A_FRAME_SIZE_MAX
+};
+
+extern const R4A_CAMERA_FRAME r4aCameraFrameFormats[];
+extern const int r4aCameraFrameFormatsEntries;
+
+// Lookup the frame size
+// Inputs:
+//   frameSize: One of the R4A_FRAME_SIZE_* values
+// Outputs:
+//   Returns the address of a R4A_CAMERA_FRAME data structure if found or
+//   nullptr when not found
+const R4A_CAMERA_FRAME * r4aCameraFindFrameSize(R4A_FRAME_SIZE_t frameSize);
+
+// Verify the enum values against the corresponding tables
+void r4aCameraVerifyTables();
+
 //****************************************
 // Generic I2C Class
 //****************************************
