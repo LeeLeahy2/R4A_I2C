@@ -123,6 +123,8 @@ typedef struct _R4A_CAMERA_FRAME
 {
     uint16_t _xPixels;           // Number of pixels in the X axis
     uint16_t _yPixels;           // Number of pixels in the Y axis
+    uint8_t _xRatio;             // Aspect ratio
+    uint8_t _yRatio;
     const char * _name;          // Name of this frame size
     R4A_FRAME_SIZE_t _frameSize; // One of the R4A_FRAME_SIZE_* values
 } R4A_CAMERA_FRAME;
