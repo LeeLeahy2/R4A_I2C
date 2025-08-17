@@ -71,7 +71,7 @@ const R4A_CAMERA_FRAME * r4aCameraFindFrameSize(R4A_FRAME_SIZE_t frameSize)
 {
     // Walk the list of frame formats
     for (int index = 0; index < r4aCameraFrameFormatsEntries; index++)
-        if (frameSize == r4aCameraFrameFormats[index].frameSize)
+        if (frameSize == r4aCameraFrameFormats[index]._frameSize)
             return &r4aCameraFrameFormats[index];
     return nullptr;
 }
@@ -82,7 +82,7 @@ const R4A_CAMERA_PIXEL * r4aCameraFindPixelFormat(R4A_PIXEL_FORMAT_t pixelFormat
 {
     // Walk the list of frame formats
     for (int index = 0; index < r4aCameraPixelFormatsEntries; index++)
-        if (pixelFormat == r4aCameraPixelFormats[index].format)
+        if (pixelFormat == r4aCameraPixelFormats[index]._format)
             return &r4aCameraPixelFormats[index];
     return nullptr;
 }
@@ -97,13 +97,13 @@ void r4aCameraVerifyTables()
     if (r4aCameraFrameFormatsEntries != R4A_FRAME_SIZE_MAX)
         r4aReportFatalError("Fix enum R4A_FRAME_SIZE_t and r4aCameraFrameFormats!");
     for (index = 0; index < r4aCameraFrameFormatsEntries; index++)
-        if (r4aCameraFrameFormats[index].frameSize != index)
+        if (r4aCameraFrameFormats[index]._frameSize != index)
             r4aReportFatalError("Fix enum R4A_FRAME_SIZE_t and r4aCameraFrameFormats order!");
 
     // Pixel formats
     if (r4aCameraPixelFormatsEntries != R4A_PIXEL_FORMAT_MAX)
         r4aReportFatalError("Fix enum R4A_PIXEL_FORMAT_t and r4aCameraPixelFormats!");
     for (index = 0; index < r4aCameraPixelFormatsEntries; index++)
-        if (r4aCameraPixelFormats[index].format != index)
+        if (r4aCameraPixelFormats[index]._format != index)
             r4aReportFatalError("Fix enum R4A_PIXEL_FORMAT_t and r4aCameraPixelFormats order!");
 }

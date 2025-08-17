@@ -81,72 +81,78 @@ typedef struct _R4A_CAMERA_PINS
 // Define the frame formats
 enum R4A_FRAME_SIZE_t
 {
-    R4A_FRAME_SIZE_40x30 = 0,   //   40 x   30
-    R4A_FRAME_SIZE_80x60,       //   80 x   60
-    R4A_FRAME_SIZE_96x96,       //   96 x   96
-    R4A_FRAME_SIZE_100x75,      //  100 x   75
-    R4A_FRAME_SIZE_128x128,     //  128 x  128
-    R4A_FRAME_SIZE_QQVGA,       //  160 x  120
-    R4A_FRAME_SIZE_QCIF,        //  176 x  144
-    R4A_FRAME_SIZE_200x150,     //  200 x  150
-    R4A_FRAME_SIZE_HQVGA,       //  240 x  176
-    R4A_FRAME_SIZE_240x240,     //  240 x  240
-    R4A_FRAME_SIZE_QVGA,        //  320 x  240
-    R4A_FRAME_SIZE_320x320,     //  320 x  320
-    R4A_FRAME_SIZE_CIF,         //  400 x  296
-    R4A_FRAME_SIZE_400x300,     //  400 x  300
-    R4A_FRAME_SIZE_HVGA,        //  480 x  320
-    R4A_FRAME_SIZE_VGA,         //  640 x  480
-    R4A_FRAME_SIZE_P_HD,        //  720 x 1280
-    R4A_FRAME_SIZE_SVGA,        //  800 x  600
-    R4A_FRAME_SIZE_P_3MP,       //  864 x 1536
-    R4A_FRAME_SIZE_XGA,         // 1024 x  768
-    R4A_FRAME_SIZE_P_FHD,       // 1080 x 1920
-    R4A_FRAME_SIZE_HD,          // 1280 x  720
-    R4A_FRAME_SIZE_SXGA,        // 1280 x 1024
-    R4A_FRAME_SIZE_UXGA,        // 1600 x 1200
-    R4A_FRAME_SIZE_FHD,         // 1920 x 1080
-    R4A_FRAME_SIZE_QXGA,        // 2048 x 1536
-    R4A_FRAME_SIZE_QHD,         // 2560 x 1440
-    R4A_FRAME_SIZE_WQXGA,       // 2560 x 1600
-    R4A_FRAME_SIZE_QSXGA,       // 2560 x 1920
-    R4A_FRAME_SIZE_5MP,         // 2592 x 1944
+    R4A_FRAME_SIZE_40x30 = 0,   //  0:   40 x   30
+    R4A_FRAME_SIZE_80x60,       //  1;   80 x   60
+    R4A_FRAME_SIZE_96x96,       //  2:   96 x   96
+    R4A_FRAME_SIZE_100x75,      //  3:  100 x   75
+    R4A_FRAME_SIZE_128x128,     //  4:  128 x  128
+    R4A_FRAME_SIZE_QQVGA,       //  5:  160 x  120
+    R4A_FRAME_SIZE_QCIF,        //  6:  176 x  144
+    R4A_FRAME_SIZE_200x150,     //  7:  200 x  150
+    R4A_FRAME_SIZE_HQVGA,       //  8:  240 x  176
+    R4A_FRAME_SIZE_240x240,     //  9:  240 x  240
+    R4A_FRAME_SIZE_QVGA,        // 10:  320 x  240
+    R4A_FRAME_SIZE_320x320,     // 11:  320 x  320
+    R4A_FRAME_SIZE_CIF,         // 12:  400 x  296
+    R4A_FRAME_SIZE_400x300,     // 13:  400 x  300
+    R4A_FRAME_SIZE_HVGA,        // 14:  480 x  320
+    R4A_FRAME_SIZE_VGA,         // 15:  640 x  480
+    R4A_FRAME_SIZE_P_HD,        // 16:  720 x 1280
+    R4A_FRAME_SIZE_SVGA,        // 17:  800 x  600
+    R4A_FRAME_SIZE_P_3MP,       // 18:  864 x 1536
+    R4A_FRAME_SIZE_XGA,         // 19: 1024 x  768
+    R4A_FRAME_SIZE_P_FHD,       // 20: 1080 x 1920
+    R4A_FRAME_SIZE_HD,          // 21: 1280 x  720
+    R4A_FRAME_SIZE_SXGA,        // 22: 1280 x 1024
+    R4A_FRAME_SIZE_UXGA,        // 23: 1600 x 1200
+    R4A_FRAME_SIZE_FHD,         // 24: 1920 x 1080
+    R4A_FRAME_SIZE_QXGA,        // 25: 2048 x 1536
+    R4A_FRAME_SIZE_QHD,         // 26: 2560 x 1440
+    R4A_FRAME_SIZE_WQXGA,       // 27: 2560 x 1600
+    R4A_FRAME_SIZE_QSXGA,       // 28: 2560 x 1920
+    R4A_FRAME_SIZE_5MP,         // 29: 2592 x 1944
     // Add new frame sizes above this line
     R4A_FRAME_SIZE_MAX
 };
 
+// One bit for each of the R4A_FRAM_SIZE_t values
+typedef  uint32_t R4A_FRAME_SIZE_MASK_t;
+
 // Define the camera frame data structure
 typedef struct _R4A_CAMERA_FRAME
 {
-    uint16_t xPixels;           // Number of pixels in the X axis
-    uint16_t yPixels;           // Number of pixels in the Y axis
-    const char * name;          // Name of this frame size
-    R4A_FRAME_SIZE_t frameSize; // One of the R4A_FRAME_SIZE_* values
+    uint16_t _xPixels;           // Number of pixels in the X axis
+    uint16_t _yPixels;           // Number of pixels in the Y axis
+    const char * _name;          // Name of this frame size
+    R4A_FRAME_SIZE_t _frameSize; // One of the R4A_FRAME_SIZE_* values
 } R4A_CAMERA_FRAME;
 
 // Define the pixel formats
 enum R4A_PIXEL_FORMAT_t
 {
-    R4A_PIXEL_FORMAT_GRAYSCALE = 0,
-    R4A_PIXEL_FORMAT_JPEG,
-    R4A_PIXEL_FORMAT_RAW,
-    R4A_PIXEL_FORMAT_RGB444,
-    R4A_PIXEL_FORMAT_RGB555,
-    R4A_PIXEL_FORMAT_RGB565,
-    R4A_PIXEL_FORMAT_RGB888,
-    R4A_PIXEL_FORMAT_YUV420,
-    R4A_PIXEL_FORMAT_YUV422,
+    R4A_PIXEL_FORMAT_GRAYSCALE = 0, //  0
+    R4A_PIXEL_FORMAT_JPEG,          //  1
+    R4A_PIXEL_FORMAT_RAW,           //  2
+    R4A_PIXEL_FORMAT_RGB444,        //  3
+    R4A_PIXEL_FORMAT_RGB555,        //  4
+    R4A_PIXEL_FORMAT_RGB565,        //  5
+    R4A_PIXEL_FORMAT_RGB888,        //  6
+    R4A_PIXEL_FORMAT_YUV420,        //  7
+    R4A_PIXEL_FORMAT_YUV422,        //  8
     // Add new pixel formats above this line
     R4A_PIXEL_FORMAT_MAX
 };
 
+// One bit for each of the R4A_PIXEL_FORMAT_t values
+typedef  uint16_t R4A_PIXEL_FORMAT_MASK_t;
+
 // Define the camera pixel format data structure
 typedef struct _R4A_CAMERA_PIXEL
 {
-    const char * name;          // Name of this pixel format
-    bool color;                 // True if color image, false if B/W or grayscale
-    uint8_t bitsPerPixel;       // Number of bits for each pixel
-    R4A_PIXEL_FORMAT_t format;  // Format of the pixels
+    const char * _name;         // Name of this pixel format
+    bool _color;                // True if color image, false if B/W or grayscale
+    uint8_t _bitsPerPixel;      // Number of bits for each pixel
+    R4A_PIXEL_FORMAT_t _format; // Format of the pixels
 } R4A_CAMERA_PIXEL;
 
 extern const R4A_CAMERA_FRAME r4aCameraFrameFormats[];
