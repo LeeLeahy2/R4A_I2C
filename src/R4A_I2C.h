@@ -115,8 +115,44 @@ enum R4A_FRAME_SIZE_t
     R4A_FRAME_SIZE_MAX
 };
 
+// Define the camera frame data structure
+typedef struct _R4A_CAMERA_FRAME
+{
+    uint16_t xPixels;           // Number of pixels in the X axis
+    uint16_t yPixels;           // Number of pixels in the Y axis
+    const char * name;          // Name of this frame size
+    R4A_FRAME_SIZE_t frameSize; // One of the R4A_FRAME_SIZE_* values
+} R4A_CAMERA_FRAME;
+
+// Define the pixel formats
+enum R4A_PIXEL_FORMAT_t
+{
+    R4A_PIXEL_FORMAT_GRAYSCALE = 0,
+    R4A_PIXEL_FORMAT_JPEG,
+    R4A_PIXEL_FORMAT_RAW,
+    R4A_PIXEL_FORMAT_RGB444,
+    R4A_PIXEL_FORMAT_RGB555,
+    R4A_PIXEL_FORMAT_RGB565,
+    R4A_PIXEL_FORMAT_RGB888,
+    R4A_PIXEL_FORMAT_YUV420,
+    R4A_PIXEL_FORMAT_YUV422,
+    // Add new pixel formats above this line
+    R4A_PIXEL_FORMAT_MAX
+};
+
+// Define the camera pixel format data structure
+typedef struct _R4A_CAMERA_PIXEL
+{
+    const char * name;          // Name of this pixel format
+    bool color;                 // True if color image, false if B/W or grayscale
+    uint8_t bitsPerPixel;       // Number of bits for each pixel
+    R4A_PIXEL_FORMAT_t format;  // Format of the pixels
+} R4A_CAMERA_PIXEL;
+
 extern const R4A_CAMERA_FRAME r4aCameraFrameFormats[];
 extern const int r4aCameraFrameFormatsEntries;
+extern const R4A_CAMERA_PIXEL r4aCameraPixelFormats[];
+extern const int r4aCameraPixelFormatsEntries;
 
 // Lookup the frame size
 // Inputs:
@@ -125,6 +161,14 @@ extern const int r4aCameraFrameFormatsEntries;
 //   Returns the address of a R4A_CAMERA_FRAME data structure if found or
 //   nullptr when not found
 const R4A_CAMERA_FRAME * r4aCameraFindFrameSize(R4A_FRAME_SIZE_t frameSize);
+
+// Lookup the pixel format
+// Inputs:
+//   pixelFormat: One of the R4A_PIXEL_FORMAT_* values
+// Outputs:
+//   Returns the address of a R4A_CAMERA_PIXEL data structure if found or
+//   nullptr when not found
+const R4A_CAMERA_PIXEL * r4aCameraFindPixelFormat(R4A_PIXEL_FORMAT_t pixelFormat);
 
 // Verify the enum values against the corresponding tables
 void r4aCameraVerifyTables();
