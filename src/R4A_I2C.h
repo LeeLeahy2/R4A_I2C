@@ -30,9 +30,9 @@ const uint8_t R4A_I2C_SWRST = 0x06;
 #define R4A_I2C_FAST_MODE_PLUS_HZ       (1 * 1000 * 1000)   // 1.0 MHz
 #define R4A_I2C_HIGH_SPEED_MODE_HZ      (34 * 100 * 1000)   // 3.4 MHz
 
-#define R4A_I2C_ADDRESSES_8_BIT      128    // Total 7-bit addresses available on the I2C bus
+#define R4A_I2C_ADDRESSES_7_BIT      128    // Total 7-bit addresses available on the I2C bus
 #define R4A_I2C_ADDRESSES_10_BIT    1024    // Total 10-bit addresses available on the I2C bus
-#define R4A_I2C_ADDRESSES       R4A_I2C_ADDRESSES_10_BIT
+#define R4A_I2C_ADDRESSES       R4A_I2C_ADDRESSES_7_BIT
 
 //****************************************
 // Forward data structures

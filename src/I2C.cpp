@@ -19,7 +19,7 @@ void r4aI2cBusEnumerate(R4A_I2C_BUS * i2cBus, Print * display)
 
     // Walk all of the I2C addresses
     deviceFound = false;
-    for (R4A_I2C_ADDRESS_t addr = 0; addr < R4A_I2C_ADDRESSES_8_BIT; addr++)
+    for (R4A_I2C_ADDRESS_t addr = 0; addr < R4A_I2C_ADDRESSES_7_BIT; addr++)
     {
         present = false;
         timer = millis();
