@@ -13,6 +13,7 @@
 
 const R4A_CAMERA_FRAME r4aCameraFrameFormats[] =
 {
+    // Entries sorted by width, height
     // Width Height  Ratio    Name      Symbol
     {  40,       30,  4,  3,  "40x30",   R4A_FRAME_SIZE_40x30},
     {  80,       60,  4,  3,  "80x60",   R4A_FRAME_SIZE_80x60},
@@ -51,16 +52,17 @@ const int r4aCameraFrameFormatsEntries = sizeof(r4aCameraFrameFormats)
 // Define the supported camera formats
 const R4A_CAMERA_PIXEL r4aCameraPixelFormats[] =
 {
-    //  Name      Color bits  Symbol
-    {"GRAYSCALE", false,   8, R4A_PIXEL_FORMAT_GRAYSCALE},
-    {"JPEG",      true,   24, R4A_PIXEL_FORMAT_JPEG},
+    // Entries sorted by bits, resolution, color
+    // Name      Color  Bits  Symbol
     {"RAW",       true,   32, R4A_PIXEL_FORMAT_RAW},
-    {"RGB444",    true,   12, R4A_PIXEL_FORMAT_RGB444},
-    {"RGB555",    true,   16, R4A_PIXEL_FORMAT_RGB555},
-    {"RGB565",    true,   16, R4A_PIXEL_FORMAT_RGB565},
     {"RGB888",    true,   24, R4A_PIXEL_FORMAT_RGB888},
-    {"YUV420",    true,    6, R4A_PIXEL_FORMAT_YUV420},
+    {"JPEG",      true,   24, R4A_PIXEL_FORMAT_JPEG},
+    {"RGB565",    true,   16, R4A_PIXEL_FORMAT_RGB565},
+    {"RGB555",    true,   16, R4A_PIXEL_FORMAT_RGB555},
+    {"RGB444",    true,   12, R4A_PIXEL_FORMAT_RGB444},
     {"YUV422",    true,    8, R4A_PIXEL_FORMAT_YUV422},
+    {"GRAYSCALE", false,   8, R4A_PIXEL_FORMAT_GRAYSCALE},
+    {"YUV420",    true,    6, R4A_PIXEL_FORMAT_YUV420},
 };
 const int r4aCameraPixelFormatsEntries = sizeof(r4aCameraPixelFormats)
                                        / sizeof(r4aCameraPixelFormats[0]);
