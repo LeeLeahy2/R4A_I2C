@@ -126,7 +126,7 @@ typedef struct _R4A_CAMERA_FRAME
     uint8_t _xRatio;             // Aspect ratio
     uint8_t _yRatio;
     const char * _name;          // Name of this frame size
-    R4A_FRAME_SIZE_t _frameSize; // One of the R4A_FRAME_SIZE_* values
+    R4A_FRAME_SIZE_t _r4aFrameSize; // One of the R4A_FRAME_SIZE_* values
 } R4A_CAMERA_FRAME;
 
 // Define the pixel formats
@@ -156,11 +156,6 @@ typedef struct _R4A_CAMERA_PIXEL
     uint8_t _bitsPerPixel;      // Number of bits for each pixel
     R4A_PIXEL_FORMAT_t _format; // Format of the pixels
 } R4A_CAMERA_PIXEL;
-
-extern const R4A_CAMERA_FRAME r4aCameraFrameFormats[];
-extern const int r4aCameraFrameFormatsEntries;
-extern const R4A_CAMERA_PIXEL r4aCameraPixelFormats[];
-extern const int r4aCameraPixelFormatsEntries;
 
 // Lookup the frame size
 // Inputs:

@@ -11,7 +11,7 @@
 // Constants
 //****************************************
 
-const R4A_CAMERA_FRAME r4aCameraFrameFormats[] =
+const R4A_CAMERA_FRAME r4aCameraFrameFormat[] =
 {
     // Entries sorted by width, height
     // Width Height  Ratio    Name      Symbol
@@ -46,11 +46,11 @@ const R4A_CAMERA_FRAME r4aCameraFrameFormats[] =
     {2560,     1920,  4,  3,  "QSXGA",   R4A_FRAME_SIZE_QSXGA},
     {2592,     1944,  4,  3,  "5MP",     R4A_FRAME_SIZE_5MP},
 };
-const int r4aCameraFrameFormatsEntries = sizeof(r4aCameraFrameFormats)
-                                       / sizeof(r4aCameraFrameFormats[0]);
+const int r4aCameraFrameFormatEntries = sizeof(r4aCameraFrameFormat)
+                                      / sizeof(r4aCameraFrameFormat[0]);
 
 // Define the supported camera formats
-const R4A_CAMERA_PIXEL r4aCameraPixelFormats[] =
+const R4A_CAMERA_PIXEL r4aCameraPixelFormat[] =
 {
     // Entries sorted by bits, resolution, color
     // Name      Color  Bits  Symbol
@@ -64,17 +64,23 @@ const R4A_CAMERA_PIXEL r4aCameraPixelFormats[] =
     {"GRAYSCALE", false,   8, R4A_PIXEL_FORMAT_GRAYSCALE},
     {"YUV420",    true,    6, R4A_PIXEL_FORMAT_YUV420},
 };
-const int r4aCameraPixelFormatsEntries = sizeof(r4aCameraPixelFormats)
-                                       / sizeof(r4aCameraPixelFormats[0]);
+const int r4aCameraPixelFormatEntries = sizeof(r4aCameraPixelFormat)
+                                      / sizeof(r4aCameraPixelFormat[0]);
+
+//****************************************
+// Locals
+//****************************************
+
+volatile int32_t r4aCameraUsers;
 
 //*********************************************************************
 // Lookup the frame size
-const R4A_CAMERA_FRAME * r4aCameraFindFrameSize(R4A_FRAME_SIZE_t frameSize)
+const R4A_CAMERA_FRAME * r4aCameraFindFrameSize(R4A_FRAME_SIZE_t r4aFrameSize)
 {
     // Walk the list of frame formats
-    for (int index = 0; index < r4aCameraFrameFormatsEntries; index++)
-        if (frameSize == r4aCameraFrameFormats[index]._frameSize)
-            return &r4aCameraFrameFormats[index];
+    for (int index = 0; index < r4aCameraFrameFormatEntries; index++)
+        if (r4aFrameSize == r4aCameraFrameFormat[index]._r4aFrameSize)
+            return &r4aCameraFrameFormat[index];
     return nullptr;
 }
 
@@ -83,9 +89,9 @@ const R4A_CAMERA_FRAME * r4aCameraFindFrameSize(R4A_FRAME_SIZE_t frameSize)
 const R4A_CAMERA_PIXEL * r4aCameraFindPixelFormat(R4A_PIXEL_FORMAT_t pixelFormat)
 {
     // Walk the list of frame formats
-    for (int index = 0; index < r4aCameraPixelFormatsEntries; index++)
-        if (pixelFormat == r4aCameraPixelFormats[index]._format)
-            return &r4aCameraPixelFormats[index];
+    for (int index = 0; index < r4aCameraPixelFormatEntries; index++)
+        if (pixelFormat == r4aCameraPixelFormat[index]._format)
+            return &r4aCameraPixelFormat[index];
     return nullptr;
 }
 
@@ -93,19 +99,48 @@ const R4A_CAMERA_PIXEL * r4aCameraFindPixelFormat(R4A_PIXEL_FORMAT_t pixelFormat
 // Verify the enum values against the corresponding tables
 void r4aCameraVerifyTables()
 {
+    uint64_t found;
     int index;
 
-    // Frame sizes
-    if (r4aCameraFrameFormatsEntries != R4A_FRAME_SIZE_MAX)
-        r4aReportFatalError("Fix enum R4A_FRAME_SIZE_t and r4aCameraFrameFormats!");
-    for (index = 0; index < r4aCameraFrameFormatsEntries; index++)
-        if (r4aCameraFrameFormats[index]._frameSize != index)
-            r4aReportFatalError("Fix enum R4A_FRAME_SIZE_t and r4aCameraFrameFormats order!");
+    // Check for duplicates in the r4aCameraFrameFormat table
+    found = 0;
+    for (index = 0; index < r4aCameraFrameFormatEntries; index++)
+    {
+        if (found & (1 << r4aCameraFrameFormat[index]._r4aFrameSize))
+        {
+            Serial.printf("ERROR: Duplicate _frameSize entry at r4aCameraFrameFormat[%d]\r\n", index);
+            r4aReportFatalError("Duplicate _frameSize entry in r4aCameraFrameFormat table!");
+        }
+        else
+            found |= 1 << r4aCameraFrameFormat[index]._r4aFrameSize;
+    }
 
-    // Pixel formats
-    if (r4aCameraPixelFormatsEntries != R4A_PIXEL_FORMAT_MAX)
-        r4aReportFatalError("Fix enum R4A_PIXEL_FORMAT_t and r4aCameraPixelFormats!");
-    for (index = 0; index < r4aCameraPixelFormatsEntries; index++)
-        if (r4aCameraPixelFormats[index]._format != index)
-            r4aReportFatalError("Fix enum R4A_PIXEL_FORMAT_t and r4aCameraPixelFormats order!");
+    // Verify the r4aCameraFrameFormat table size
+    if (r4aCameraFrameFormatEntries != R4A_FRAME_SIZE_MAX)
+    {
+        Serial.printf("ERROR: Too %s entries in r4aCameraFrameFormat table!\r\n",
+                      r4aCameraFrameFormatEntries > R4A_FRAME_SIZE_MAX ? "many" : "few");
+        r4aReportFatalError("Fix enum R4A_FRAME_SIZE_t and r4aCameraFrameFormat!");
+    }
+
+    // Check for duplicates in the r4aCameraPixelFormat table
+    found = 0;
+    for (index = 0; index < r4aCameraPixelFormatEntries; index++)
+    {
+        if (found & (1 << r4aCameraPixelFormat[index]._format))
+        {
+            Serial.printf("ERROR: Duplicate _format entry at r4aCameraPixelFormat[%d]\r\n", index);
+            r4aReportFatalError("Duplicate _format entry in r4aCameraPixelFormat table!");
+        }
+        else
+            found |= 1 << r4aCameraPixelFormat[index]._format;
+    }
+
+    // Verify the r4aCameraPixelFormat table size
+    if (r4aCameraPixelFormatEntries != R4A_PIXEL_FORMAT_MAX)
+    {
+        Serial.printf("ERROR: Too %s entries in r4aCameraPixelFormat table!\r\n",
+                      r4aCameraPixelFormatEntries > R4A_PIXEL_FORMAT_MAX ? "many" : "few");
+        r4aReportFatalError("Fix enum R4A_PIXEL_FORMAT_t and r4aCameraPixelFormat!");
+    }
 }
