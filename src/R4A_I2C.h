@@ -157,6 +157,8 @@ typedef struct _R4A_CAMERA_PIXEL
     R4A_PIXEL_FORMAT_t _format; // Format of the pixels
 } R4A_CAMERA_PIXEL;
 
+extern volatile int32_t r4aCameraUsers;
+
 // Lookup the frame size
 // Inputs:
 //   frameSize: One of the R4A_FRAME_SIZE_* values
@@ -172,6 +174,20 @@ const R4A_CAMERA_FRAME * r4aCameraFindFrameSize(R4A_FRAME_SIZE_t frameSize);
 //   Returns the address of a R4A_CAMERA_PIXEL data structure if found or
 //   nullptr when not found
 const R4A_CAMERA_PIXEL * r4aCameraFindPixelFormat(R4A_PIXEL_FORMAT_t pixelFormat);
+
+// Add a camera user
+// Inputs:
+//   user: User of the camera, specifies a bit number in the r4aCameraUsers bit mask
+// Outputs:
+//   Returns the previous value of the r4aCameraUsers bit mask
+int32_t r4aCameraUserAdd(uint8_t user);
+
+// Remove a camera user
+// Inputs:
+//   user: User of the camera, specifies a bit number in the r4aCameraUsers bit mask
+// Outputs:
+//   Returns the previous value of the r4aCameraUsers bit mask
+int32_t r4aCameraUserRemove(uint8_t user);
 
 // Verify the enum values against the corresponding tables
 void r4aCameraVerifyTables();

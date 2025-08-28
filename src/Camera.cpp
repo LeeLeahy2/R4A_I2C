@@ -96,6 +96,26 @@ const R4A_CAMERA_PIXEL * r4aCameraFindPixelFormat(R4A_PIXEL_FORMAT_t pixelFormat
 }
 
 //*********************************************************************
+// Add a camera user
+int32_t r4aCameraUserAdd(uint8_t user)
+{
+    int32_t bitMask;
+
+    bitMask = 1 << user;
+    return r4aAtomicOr32((int32_t *)&r4aCameraUsers, bitMask, __ATOMIC_RELAXED);
+}
+
+//*********************************************************************
+// Remove a camera user
+int32_t r4aCameraUserRemove(uint8_t user)
+{
+    int32_t bitMask;
+
+    bitMask = ~(1 << user);
+    return r4aAtomicAnd32((int32_t *)&r4aCameraUsers, bitMask, __ATOMIC_RELAXED);
+}
+
+//*********************************************************************
 // Verify the enum values against the corresponding tables
 void r4aCameraVerifyTables()
 {
