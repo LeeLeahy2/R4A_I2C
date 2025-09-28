@@ -300,6 +300,17 @@ bool r4aI2cBusWriteRead(R4A_I2C_BUS * i2cBus,
                         size_t * bytesReadAddr = nullptr,
                         Print * display = nullptr);
 
+// Issue a software reset to the I2C devices
+// Inputs:
+//   i2cBus: Address of a R4A_I2C_BUS data structure
+//   display: Device used for debug output
+//   debug: Device used for I2C debug output
+// Outputs:
+//   Return true upon success and false upon failure
+bool r4aI2cCallSwReset(R4A_I2C_BUS * i2cBus,
+                       Print * display = nullptr,
+                       Print * debug = nullptr);
+
 //****************************************
 // I2C menu API
 //****************************************

@@ -159,6 +159,31 @@ bool r4aI2cBusIsDevicePresent(R4A_I2C_BUS * i2cBus, R4A_I2C_ADDRESS_t i2cAddress
     return i2cBus->_present[i2cAddress / 8] & (1 << (i2cAddress & 7));
 }
 
+//*********************************************************************
+// Issue a software reset to the I2C devices
+bool r4aI2cCallSwReset(R4A_I2C_BUS * i2cBus, Print * display, Print * debug)
+{
+    uint8_t data;
+    bool success;
+
+    // Reset the devices on the I2C bus
+    data = R4A_I2C_SWRST;
+    success = r4aI2cBusWrite(i2cBus,
+                             R4A_I2C_GENERAL_CALL_DEVICE_ADDRESS,
+                             &data,
+                             sizeof(data),
+                             debug);
+    if (success == false)
+    {
+        const char * errorMessage = "ERROR: Failed to reset the I2C bus!\r\n";
+        if (display)
+            display->printf(errorMessage);
+        else if (debug)
+            debug->printf(errorMessage);
+    }
+    return success;
+}
+
 //****************************************
 // I2C menu API
 //****************************************
