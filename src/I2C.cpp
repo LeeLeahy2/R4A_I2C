@@ -347,46 +347,78 @@ void r4aI2cMenuWrite(const R4A_MENU_ENTRY * menuEntry,
                      const char * command,
                      Print * display)
 {
-    uint8_t data[2];
+    uint8_t data[1 + 16]; // Optional register address followed by data bytes
+    size_t dataBytes;
     R4A_I2C_ADDRESS_t i2cAddress;
+    String line;
     int values;
 
     do
     {
-        // Parse the command line
-        if (r4aI2cMenuGetAddressRegisterData(menuEntry,
-                                             command,
-                                             &values,
-                                             &i2cAddress,
-                                             &data[0], &data[1]))
+        // Get the parameter name
+        String line = r4aMenuGetParameters(menuEntry, command);
+        line.trim();
+
+        // Get the I2C address
+        if (sscanf(line.c_str(), "%x", &i2cAddress) == 0)
         {
-            if (values == 2)
-            {
-                if (r4aI2cBusWrite(r4aI2cBus,
-                                   i2cAddress,
-                                   &data[1],
-                                   1,
-                                   nullptr))
-                    // Successful write
-                    break;
-            }
-            else
-            {
-                if (r4aI2cBusWrite(r4aI2cBus,
-                                   i2cAddress,
-                                   data,
-                                   2,
-                                   nullptr))
-                    // Successful write
-                    break;
-            }
-            display->printf("ERROR: Failed to write I2C data to 0x%03x!",
-                            i2cAddress);
+            if (display)
+                display->printf("Please specify the I2C address (0 - 0x%03x) for aa",
+                                R4A_I2C_ADDRESSES - 1);
+            break;
         }
-        else if (values <= 0)
-            display->printf("Please specify the I2C address (0 - 0x%03x) for aa",
-                            R4A_I2C_ADDRESSES);
-        else if (values == 1)
-            display->println("Please specify a data byte or the I2C register (0 - 0xff) for rr");
+
+        dataBytes = 0;
+        while (1)
+        {
+            // Remove the hex value
+            while (((line.c_str()[0] >= '0') && (line.c_str()[0] <= '9'))
+                || ((line.c_str()[0] >= 'a') && (line.c_str()[0] <= 'f'))
+                || ((line.c_str()[0] >= 'A') && (line.c_str()[0] <= 'F')))
+            {
+                line = line.substring(1);
+            }
+
+            // Remove the white space
+            line.trim();
+
+            if ((line.c_str()[0] == 0) || (line.c_str()[0] == '\n') || (line.c_str()[0] == '\r'))
+                break;
+
+            // Get the next data byte
+            if (sscanf(line.c_str(), "%x", &data[dataBytes]) == 0)
+            {
+                if (display)
+                    display->printf("Invalid data byte [%d]\r\n", dataBytes);
+                break;
+            }
+
+            // Account for this data byte
+            dataBytes += 1;
+            if (dataBytes == sizeof(data))
+                break;
+        }
+
+        // Verify that there is at least one data byte
+        if (dataBytes == 0)
+        {
+            if (display)
+                display->println("Please specify a data byte or the I2C register (0 - 0xff) for rr");
+            break;
+        }
+
+        // Send the data via I2C
+        if (r4aI2cBusWrite(r4aI2cBus,
+                           i2cAddress,
+                           data,
+                           dataBytes,
+                           nullptr))
+
+            // Successful write
+            break;
+
+        // Display the error
+        display->printf("ERROR: Failed to write I2C data to 0x%03x!",
+                        i2cAddress);
     } while (0);
 }
