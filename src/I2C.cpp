@@ -48,8 +48,6 @@ void r4aI2cBusEnumerate(R4A_I2C_BUS * i2cBus, Print * display)
             {
                 if (index < i2cBus->_deviceTableEntries)
                     display->printf("    0x%03x: %s\r\n", addr, i2cBus->_deviceTable[index].displayName);
-                else if (addr == 0)
-                    display->printf("    0x%03x: General Call\r\n", addr);
                 else
                     display->printf("    0x%03x: ???\r\n", addr);
             }
